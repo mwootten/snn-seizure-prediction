@@ -211,8 +211,23 @@ synapseDelayB5C1B = 5
 synapseDelayB5C1C = 9
 synapseDelayB5C1D = 13
 # setting synapse Delay for B5 to C1
+lastOutputTimeA1 = 0
+lastOutputTimeA2 = 0
+lastOutputTimeA3 = 0
+lastOutputTimeB1 = -1
+lastOutputTimeB2 = -1
+lastOutputTimeB3 = -1
+lastOutputTimeB4 = -1
+lastOutputTimeB5 = -1
+lastOutputTimeB6 = -1
+lastOutputTimeC1 = -1
+internalStateB1 = 0
+internalStateB2 = 0
+internalStateB3 = 0
+internalStateB4 = 0
+internalStateB5 = 0
+internalStateC1 = 0
 time = 0
-time < 26
-while True:
-  print(time)
-  time = time + 1
+for time in (0,25):
+    if lastOutputTimeA1 = time
+      if 
