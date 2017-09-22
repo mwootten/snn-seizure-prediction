@@ -1,0 +1,35 @@
+digraph G {
+	main [label="Determine whether multi- or single-spiking SNNs are more effective at predicting seizures"];
+	anyl [label="Analyze the resulting data and draw a conclusion"];
+	runn [label="Run both networks on the full input data"];
+	mult_run [label="Run the multi-spiking network on the full testing data"];
+	sing_run [label="Run the single-spiking network on the full testing data"];
+	mult [label="Construct a trained multi-spiking SNN"];
+	sing [label="Construct a trained single-spiking SNN"];
+	prep [label="Set up the common preprocessing backend"];
+	m_build [label="Code the multi-spiking SNN"];
+	m_train [label="Construct the multi-spiking training algorithm"];
+	m_descr [label="Mathematically formalize the multi-spiking network"];
+	s_build [label="Code the single-spiking SNN"];
+	s_train [label="Construct the single-spiking training algorithm"];
+	s_descr [label="Mathematically formalize the single-spiking network"];
+	p_build [label="Code the common core of the preprocessing algorithms"];
+	p_descr [label="Mathematically formalize the preprocessing algorithms"];
+
+	main -> anyl;
+	anyl -> runn;
+	runn -> mult_run;
+	runn -> sing_run;
+	mult_run -> prep;
+	mult_run -> mult;
+	mult -> m_train;
+	mult -> m_build;
+	m_build -> m_descr;
+	prep -> p_build;
+	p_build -> p_descr;
+	sing_run -> prep;
+	sing_run -> sing;
+	sing -> s_build;
+	sing -> s_train;
+	s_build -> s_descr;
+}
