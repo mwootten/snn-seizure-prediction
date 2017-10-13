@@ -2,6 +2,9 @@ digraph G {
 	main [label="Determine whether multi- or single-spiking SNNs are more effective at predicting seizures"];
 	anyl [label="Analyze the resulting data and draw a conclusion"];
 	runn [label="Run both networks on the full input data"];
+	runc [label="Run the control SVM on the full input data"];
+	c_build [label="Code the control SVM"];
+	c_prep [label="Select and calculate a appropriate summary statistics for the data"];
 	mult_run [label="Run the multi-spiking network on the full testing data"];
 	sing_run [label="Run the single-spiking network on the full testing data"];
 	mult [label="Construct a trained multi-spiking SNN"];
@@ -18,6 +21,7 @@ digraph G {
 
 	main -> anyl;
 	anyl -> runn;
+	anyl -> runc;
 	runn -> mult_run;
 	runn -> sing_run;
 	mult_run -> prep;
@@ -32,4 +36,6 @@ digraph G {
 	sing -> s_build;
 	sing -> s_train;
 	s_build -> s_descr;
+	runc -> c_build;
+	c_build -> c_prep;
 }
