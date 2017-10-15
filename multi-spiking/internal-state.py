@@ -25,7 +25,7 @@ time = 0
 # counter for time
 while time <= simulationTime:
   internalState = 0
-  if (-neuronInput - synapseDelayA + time) > 0:
+  if(neuronInput - synapseDelayA + time) > 0:
     internalState = synapseWeightA * ((-neuronInput - synapseDelayA + time) / timeDecay) * 2.71828 ** (1 - ((-neuronInput - synapseDelayA + time) / timeDecay))
   if(neuronInput - synapseDelayB + time) > 0:
     internalState = internalState + synapseWeightB * ((-neuronInput - synapseDelayB + time) / timeDecay) * 2.71828 ** (1 - ((-neuronInput - synapseDelayB + time) / timeDecay))
