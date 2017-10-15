@@ -1,3 +1,5 @@
+import math
+
 neuronThreshold = float(input("Neuron Threshold?"))
 synapseNumber = int(input("Synapse Number?"))
 synapseWeight = []
@@ -21,18 +23,19 @@ time = 0
 while time <= simulationTime:
   internalState = 0
   for x in range (0, synapseNumber):
-    if(-neuronInput - synapseDelay[x] + time) > 0:
-      internalState = internalState + synapseWeight[x] * ((-neuronInput - synapseDelay[x] + time)/timeDecay) * 2.71828 ** (1 - ((-neuronInput - synapseDelay[x] + time)/timeDecay))
+    adjustedTime = -neuronInput - synapseDelay[x] + time
+    if adjustedTime > 0:
+      internalState = internalState + synapseWeight[x] * (adjustedTime/timeDecay) * math.exp(1 - (adjustedTime/timeDecay))
   # summing alpha function values for received inputs
   # an input is recieved when the sum of the input time and the delay is equal to the time
-  if len(output[:]) > 0:
-         internalState = internalState - 2 * neuronThreshold * 2.71828 ** (-1*(time - output[-1])/refractorinessDecay)
+  if len(output) > 0:
+         internalState = internalState - 2 * neuronThreshold * math.exp(-1*(time - output[-1])/refractorinessDecay)
   # adding the refractoriness term for the most recent output
   if internalState > neuronThreshold:
     output.append(time)
   # storing output time if the neuron outputs
   if time == simulationTime:
-    print("Outputs: " + str(output[:]))
+    print("Outputs: " + str(output))
   # final printout of outputs
   time = time + 1
   # counter
