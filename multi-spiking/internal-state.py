@@ -23,7 +23,7 @@ outputE = 0
 # placeholders for outputs
 time = 0
 # counter for time
-while time <= 16:
+while time <= simulationTime:
   internalState = 0
   if (-neuronInput - synapseDelayA + time) > 0:
     internalState = synapseWeightA * ((-neuronInput - synapseDelayA + time) / timeDecay) * 2.71828 ** (1 - ((-neuronInput - synapseDelayA + time) / timeDecay))
@@ -66,7 +66,7 @@ while time <= 16:
             if outputE == 0:
               outputE = time
   # storing output time if the neuron outputs
-  if time == 16:
+  if time == simulationTime:
     print("Output A is " + str(outputA))
     print("Output B is " + str(outputB))
     print("Output C is " + str(outputC))
