@@ -9,6 +9,7 @@ hiddenLayer = int(input("Number of Hidden Layers?"))
 for x in range (1, hiddenLayer + 1):
   network.append(int(input("Number of Neurons in Hidden Layer " + str(x) + "?")))
 network.append(int(input("Number of Output Neurons?")))
+# describing network structure as neurons per layer
 synapseWeight = []
 for w in range (1, len(network)):
   outputNeuronWeight = []
@@ -21,6 +22,7 @@ for w in range (1, len(network)):
       inputNeuronWeight.append(synapsesPerConnection)
     outputNeuronWeight.append(inputNeuronWeight)
   synapseWeight.append(outputNeuronWeight)
+# organizing synapse weights by layer > number of neuron in layer > number of layer inputted from > synapse number
 simulationTime = float(input("Simulation Time?"))
 neuronInput = []
 for x in range (0, network[0]):
@@ -50,8 +52,8 @@ for a in range (0, len(network)-1):
             adjustedTime = -neuronInput[x][z] - synapseDelay[y] + time
             if adjustedTime > 0:
               internalState = internalState + synapseWeight[a][b][x][y] * (adjustedTime/timeDecay) * math.exp(1 - (adjustedTime/timeDecay))
-    # summing alpha function values for received inputs
-    # an input is recieved when the sum of the input time and the delay is equal to the time
+    # summing alpha function values for all received inputs to a neuron
+    # an input is recieved from the previous layer when the sum of the input time and the delay is equal to the time
       if len(output) > 0:
             internalState = internalState - 2 * neuronThreshold * math.exp(-1*(time - output[-1])/refractorinessDecay)
     # adding the refractoriness term for the most recent output
@@ -75,8 +77,12 @@ for w in range (1, len(network)):
         sumSynapseWeight = sumSynapseWeight + synapseWeight[w-1][x][y][z]
         weightNumber = weightNumber + 1
 meanSynapseWeight = sumSynapseWeight / weightNumber
+# randomizing synapse weights
+# calculating average synapse weight
 for w in range (1, len(network)):
   for x in range (0, network[w]):
     for y in range (0, network[w-1]):
       for z in range (0, synapseNumber):
         synapseWeight[w-1][x][y][z] = synapseWeight[w-1][x][y][z]/(meanSynapseWeight * networkOutput[-1][0])
+# reducing the synapse weights based on the average and network output
+# reduces the number of outputs from each neuron 
