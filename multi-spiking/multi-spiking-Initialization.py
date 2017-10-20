@@ -65,29 +65,14 @@ for a in range (0, len(network)-1):
       time = time + 1
       # counter
   neuronInput = networkOutput
-synapseWeight = []
-for w in range (1, len(network)):
-  outputNeuronWeight = []
-  for x in range (0, network[w]):
-    inputNeuronWeight = []
-    for y in range (0, network[w - 1]):
-      synapsesPerConnection = []
-      for z in range (0, synapseNumber):
-        synapsesPerConnection.append(randint(1,10))  
-      inputNeuronWeight.append(synapsesPerConnection)
-    outputNeuronWeight.append(inputNeuronWeight)
-  synapseWeight.append(outputNeuronWeight)
 sumSynapseWeight = 0
-for w in range (1, len(network)):
-  for x in range (0, network[w]):
-    for y in range (0, network[w-1]):
-      for z in range (0, synapseNumber):
-        sumSynapseWeight = sumSynapseWeight + synapseWeight[w-1][x][y][z]
 weightNumber = 0
 for w in range (1, len(network)):
   for x in range (0, network[w]):
     for y in range (0, network[w-1]):
       for z in range (0, synapseNumber):
+        synapseWeight[w-1][x][y][z] = randint(1,10)
+        sumSynapseWeight = sumSynapseWeight + synapseWeight[w-1][x][y][z]
         weightNumber = weightNumber + 1
 meanSynapseWeight = sumSynapseWeight / weightNumber
 for w in range (1, len(network)):
