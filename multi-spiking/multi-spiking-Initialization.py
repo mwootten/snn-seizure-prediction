@@ -38,14 +38,16 @@ timeDecay = encodingInterval + 1
 # setting time decay based on encoding interval
 layerOutput = []
 networkOutput = []
+networkInternalState =[]
 for a in range (0, len(network)-1):
-  output = []
   outputNeuronNetworkOutput = []
+  layerInternalState = []
   for b in range (0, network[a + 1]):
     # placeholder for outputs
     time = 0
     # counter for time
     output = []
+    neuronInternalState = []
     while time <= simulationTime:
       internalState = 0
       for x in range (0, network[a]):
@@ -62,13 +64,15 @@ for a in range (0, len(network)-1):
       if internalState > neuronThreshold:
           output.append(time)
   # storing output time if the neuron outputs
+      neuronInternalState.append(internalState)
       if time == simulationTime:
-          print("Outputs: " + str(output))
           layerOutput.append(output)
   # final printout of outputs
       time = time + 1
       # counter
+    layerInternalState.append(neuronInternalState)
     outputNeuronNetworkOutput.append(output)
+  networkInternalState.append(layerInternalState)
   neuronInput = layerOutput
   networkOutput.append(outputNeuronNetworkOutput)
 sumSynapseWeight = 0
@@ -90,3 +94,4 @@ for w in range (1, len(network)):
         synapseWeight[w-1][x][y][z] = synapseWeight[w-1][x][y][z]/(meanSynapseWeight * layerOutput[-1][0])
 # reducing the synapse weights based on the average and network output
 # reduces the number of outputs from each neuron 
+print("Network Outputs: " + str(networkOutput))
