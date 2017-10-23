@@ -38,7 +38,7 @@ for x in range (0, synapseNumber-1):
 timeDecay = encodingInterval + 1
 # setting time decay based on encoding interval
 layerOutput = []
-networkOutput = []
+networkOutput = [neuronInput]
 networkInternalState =[]
 for a in range (0, len(network)-1):
   outputNeuronNetworkOutput = []
