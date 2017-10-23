@@ -30,10 +30,11 @@ for x in range (0, network[0]):
 encodingInterval = float(input("Encoding Interval?"))
 refractorinessDecay = float(input("Refractoriness Decay?"))
 # setting constants
+latestOutputSpike = int(input("Latest Output Spike?"))
 synapseDelay = [1]
 for x in range (0, synapseNumber-1): 
-  synapseDelay.append(synapseDelay[x] + simulationTime/synapseNumber - (simulationTime%synapseNumber)/synapseNumber)
-# calculating synapse delays so that they cover the simulation time
+  synapseDelay.append(synapseDelay[x] + latestOutputSpike/synapseNumber - (latestOutputSpike%synapseNumber)/synapseNumber)
+# calculating synapse delays so that they cover the time from earliest input to latest meaningful output
 timeDecay = encodingInterval + 1
 # setting time decay based on encoding interval
 layerOutput = []
