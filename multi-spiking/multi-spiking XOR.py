@@ -1,5 +1,7 @@
 import math
-from random import randint
+from random import randint, seed
+
+seed(int(input("Random seed? ")))
 
 neuronThreshold = 1
 synapseNumber = int(input("Number of Synapses?"))
