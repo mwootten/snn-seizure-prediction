@@ -1,24 +1,27 @@
 import copy
+import numpy as np
 INITIAL_WEIGHT = 1
 NEURON_THRESHOLD = 1
 
+# Weights contains an entry for every synapse, organized by four
+# parameters:
+# * w - the layer of the network of the destination neuron
+# * x - the neuron index of the destination neuron within its layer
+# * y - the neuron index of the source neuron within its layer
+# * z - the index among the multiple synapses connecting those two
+#
+# Note that a (w, x) pair is sufficient to uniquely identify a neuron.
+
 
 def initWeights(layerNeuronCounts, synapsesPerConnection):
-    # Weights contains an entry for every synapse, organized by four
-    # parameters:
-    # * w - the layer of the network of the source neuron
-    # * x - the neuron index of the source neuron within its layer
-    # * y - the neuron index of the destination neuron within its layer
-    # * z - the index among the multiple synapses connecting those two
-
     weights = []
 
     # sourceLayerNumber uses zero-based indexing
     # It stops one short of the end because output neurons have no
     # further connections
-    for sourceLayerNumber in range(len(layerNeuronCounts) - 1):
-        xs = range(layerNeuronCounts[sourceLayerNumber])      # sources
-        ys = range(layerNeuronCounts[sourceLayerNumber + 1])  # destinations
+    for destinationLayerNumber in range(1, len(layerNeuronCounts)):
+        xs = range(layerNeuronCounts[destinationLayerNumber])
+        ys = range(layerNeuronCounts[destinationLayerNumber - 1])
         # Since synapses/connection is constant throughout the network,
         # we can reuse this across the network. However, we need to make
         # copies so that different weights don't influence each other.
@@ -38,10 +41,32 @@ def initWeights(layerNeuronCounts, synapsesPerConnection):
 # its respective delay.
 def synapseDelays(synapseCount, lastOutput):
     synapseDelay = [1]
+    # The int works just like mathematically - it rounds down. I think I could
+    # use the double slash here, but this is more clear.
     increment = int(lastOutput / synapseCount)
-    for x in range(0, synapseCount - 1):
-        synapseDelay.append(synapseDelay[x] + increment)
+    for i in range(0, synapseCount - 1):
+        synapseDelay.append(synapseDelay[i] + increment)
     return synapseDelay
+
+
+def spikeResponse(time, timeDecay):
+    if time > 0:
+        return (time/timeDecay) * math.exp(1 - (time/timeDecay))
+    else:
+        return 0
+
+
+def refractoriness(time, refractorinessDecay):
+    if time > 0:
+        return -2 * NEURON_THRESHOLD * math.exp(-time / refractorinessDecay)
+    else:
+        return 0
+
+
+def networkError(observed, expected):
+    o = np.array(observed)
+    e = np.array(expected)
+    return 1/2 * sum((o - e) ** 2)
 
 
 class MultiSpikingNetwork(object):
@@ -68,7 +93,20 @@ class MultiSpikingNetwork(object):
         return MultiSpikingNetwork([3, 5, 1], 4, 6, 80)
 
     def simulate(self, duration, lastOutput, inputs):
-        pass
+        # Do some basic sanity checks on the input
+        # Make sure that there are the right number of inputs
+        assert len(inputs) == len(self.weights[0])
+        # Make sure that there are no delays that could possibly overrun the
+        # end of the simulation (rendering them useless)
+        assert lastOutput <= duration
+
+        # for every layer in the network except the first, which is not a
+        # destination for any signals...
+        for w in range(1, len(self.weights)):
+            # for every neuron in that layer...
+            for x in range(0, len(self.weights[w])):
+                # This part of the loop is specific to each individual neuron.
+                pass
 
 
 if __name__ == "__main__":  # run this code only if executed, not when imported

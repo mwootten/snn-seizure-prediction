@@ -13,12 +13,12 @@ network.append(1)
 synapseWeight = []
 for w in range (1, len(network)):
   outputNeuronWeight = []
-  for x in range (0, network[w]):
+  for x in range (0, network[w]):  # w: 1--len
     inputNeuronWeight = []
-    for y in range (0, network[w - 1]):
+    for y in range (0, network[w - 1]):  # w-1: 0--len-1
       synapsesPerConnection = []
       for z in range (0, synapseNumber):
-        synapsesPerConnection.append(1)  
+        synapsesPerConnection.append(1)
       inputNeuronWeight.append(synapsesPerConnection)
     outputNeuronWeight.append(inputNeuronWeight)
   synapseWeight.append(outputNeuronWeight)
@@ -32,7 +32,7 @@ refractorinessDecay = float(input("Refractoriness Decay?"))
 # setting constants
 latestOutputSpike = int(input("Latest Output Spike?"))
 synapseDelay = [1]
-for x in range (0, synapseNumber-1): 
+for x in range (0, synapseNumber-1):
   synapseDelay.append(synapseDelay[x] + latestOutputSpike/synapseNumber - (latestOutputSpike%synapseNumber)/synapseNumber)
 # calculating synapse delays so that they cover the simulation time
 timeDecay = encodingInterval + 1
@@ -98,14 +98,14 @@ for w in range (1, len(network)):
       for z in range (0, synapseNumber):
         synapseWeight[w-1][x][y][z] = synapseWeight[w-1][x][y][z]/(meanSynapseWeight * layerOutput[-1][0])
 # reducing the synapse weights based on the average and network output
-# reduces the number of outputs from each neuron 
+# reduces the number of outputs from each neuron
 print("Network Outputs: " + str(networkOutput))
 learningRate = float(input("Learning Rate?"))
 maxEpoch = int(input("Max Epochs?"))
 epoch = 0
 errorTime = []
 while epoch <= maxEpoch:
-  epoch = epoch + 1 
+  epoch = epoch + 1
   neuronInput = [[randint(0,1)*6],[randint(0,1)*6], [0]]
   expectedOutput = [abs(neuronInput[0][0]-neuronInput[1][0]) + 10]
   layerOutput = []
@@ -164,7 +164,7 @@ while epoch <= maxEpoch:
   previousSynapseWeight = synapseWeight
   for x in range (0, network[-1]):
     for y in range (0, network[-2]):
-      for z in range (0, synapseNumber): 
+      for z in range (0, synapseNumber):
         errorOutput = networkOutput[-1][x][0] - expectedOutput[x]
         internalStateWeight = 0
         for a in range (0, len(networkOutput[-2][y])):
@@ -177,10 +177,10 @@ while epoch <= maxEpoch:
               adjustedTimeOutput = networkOutput[-1][x][0] - networkOutput[-2][a][b] - synapseDelay[c]
               if adjustedTimeOutput == 0:
                 adjustedTimeOutput = 0.1
-                 # arbitrarily changing 0 values to 0.1 so no divide by 0 error                                                                                
+                 # arbitrarily changing 0 values to 0.1 so no divide by 0 error
               alphaFunctionOutput = previousSynapseWeight[-1][x][a][c] * (adjustedTimeOutput/timeDecay) * math.exp(1 - (adjustedTimeOutput/timeDecay))
               denominatorOutputInternalState = denominatorOutputInternalState + alphaFunctionOutput*(1/adjustedTimeOutput - 1/timeDecay)
-        outputInternalState = -1 / (denominatorOutputInternalState)      
+        outputInternalState = -1 / (denominatorOutputInternalState)
         errorGradient = errorOutput * outputInternalState * internalStateWeight
         synapseWeight[-1][x][y][z] = previousSynapseWeight[-1][x][y][z] - learningRate*errorGradient
   for w in range (1, len(network)-1):
@@ -197,7 +197,7 @@ while epoch <= maxEpoch:
                   adjustedTimeOutput = networkOutput[-1][a][0] - networkOutput[-2][b][c] - synapseDelay[d]
                   if adjustedTimeOutput == 0:
                     adjustedTimeOutput = 0.1
-                 # arbitrarily changing 0 values to 0.1 so no divide by 0 error                                                                                 
+                 # arbitrarily changing 0 values to 0.1 so no divide by 0 error
                   alphaFunctionOutput = previousSynapseWeight[-1][a][b][d] * (adjustedTimeOutput/timeDecay)* math.exp(1- (adjustedTimeOutput/timeDecay))
                   denominatorOutputInternalState = denominatorOutputInternalState + alphaFunctionOutput*(1/adjustedTimeOutput - 1/timeDecay)
             outputInternalState = -1 / (denominatorOutputInternalState)
@@ -207,7 +207,7 @@ while epoch <= maxEpoch:
                 adjustedTimeInput = networkOutput[-1][a][0] - networkOutput[w][x][b] - synapseDelay[c]
                 if adjustedTimeInput == 0:
                   adjustedTimeInput = 0.1
-                 # arbitrarily changing 0 values to 0.1 so no divide by 0 error                                                                                   
+                 # arbitrarily changing 0 values to 0.1 so no divide by 0 error
                 alphaFunctionInput = previousSynapseWeight[w-1][x][y][c] * (adjustedTimeInput)* math.exp(1-adjustedTimeInput/timeDecay)
                 internalStateInputSum = internalStateInputSum + alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay)
             internalStateInput = -1*internalStateInputSum
@@ -222,7 +222,7 @@ while epoch <= maxEpoch:
                       adjustedTimeInput = networkOutput[w][x][b] - networkOutput[w-1][c][d] - synapseDelay[e]
                       if adjustedTimeInput == 0:
                         adjustedTimeInput = 0.1
-                 # arbitrarily changing 0 values to 0.1 so no divide by 0 error                                                                             
+                 # arbitrarily changing 0 values to 0.1 so no divide by 0 error
                       alphaFunctionInput = previousSynapseWeight[w-1][x][c][e] * (adjustedTimeInput/timeDecay)* math.exp(1- (adjustedTimeInput/timeDecay))
                       inputInternalStateDenominator = inputInternalStateDenominator + alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay)
                 inputInternalState = -1/inputInternalStateDenominator
@@ -255,4 +255,3 @@ while epoch <= maxEpoch:
                 inputWeight = inputInternalState*(internalStateWeight+internalStateInput*inputWeight)
             errorGradient = errorGradient + errorInput*inputWeight
           synapseWeight[w-1][x][y][z] = previousSynapseWeight[w-1][x][y][z] - learningRate*errorGradient
-          
