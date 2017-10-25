@@ -172,6 +172,8 @@ while epoch <= maxEpoch:
         for a in range (0, len(networkOutput[-2][y])):
           adjustedTimeOutput = networkOutput[-1][x][0] - networkOutput[-2][y][a] - synapseDelay[z]
           internalStateWeight = internalStateWeight + (adjustedTimeOutput/timeDecay) * math.exp(1 - (adjustedTimeOutput/timeDecay))
+          if adjustedTimeOutput <= 0:
+            internalStateWeight = internalStateWeight
         denominatorOutputInternalState = 0
         for a in range (0, network[-2]):
           for b in range (0, len(networkOutput[-2][a])):
@@ -180,8 +182,6 @@ while epoch <= maxEpoch:
               alphaFunctionOutput = previousSynapseWeight[-1][x][a][c] * (adjustedTimeOutput/timeDecay) * math.exp(1 - (adjustedTimeOutput/timeDecay))
               if adjustedTimeOutput > 0:
                 denominatorOutputInternalState = denominatorOutputInternalState + alphaFunctionOutput*(1/adjustedTimeOutput - 1/timeDecay)
-              if adjustedTimeOutput == 0:
-                denominatorOutputInternalState = denominatorOutputInternalState + (previousSynapseWeight[-1][x][a][c]/timeDecay)* math.exp(1)
         outputInternalState = -1 / (denominatorOutputInternalState)
         errorGradient = errorOutput * outputInternalState * internalStateWeight
         synapseWeight[-1][x][y][z] = previousSynapseWeight[-1][x][y][z] - learningRate*errorGradient
@@ -200,8 +200,6 @@ while epoch <= maxEpoch:
                   alphaFunctionOutput = previousSynapseWeight[-1][a][b][d] * (adjustedTimeOutput/timeDecay)* math.exp(1- (adjustedTimeOutput/timeDecay))
                   if adjustedTimeOutput > 0:
                     denominatorOutputInternalState = denominatorOutputInternalState + alphaFunctionOutput*(1/adjustedTimeOutput - 1/timeDecay)
-                  if adjustedTimeOutput == 0:
-                    denominatorOutputInternalState = denominatorOutputInternalState + (previousSynapseWeight[-1][a][b][d]/timeDecay)* math.exp(1)
             outputInternalState = -1 / (denominatorOutputInternalState)
             internalStateInputSum = 0
             for b in range (0, len(networkOutput[w][x])):
@@ -210,8 +208,6 @@ while epoch <= maxEpoch:
                 alphaFunctionInput = previousSynapseWeight[w-1][x][y][c] * (adjustedTimeInput)* math.exp(1-adjustedTimeInput/timeDecay)
                 if adjustedTimeOutput > 0:
                   internalStateInputSum = internalStateInputSum + alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay)
-                if adjustedTimeOutput == 0:
-                  internalStateInoutSum = internalStateInputSum + (previousSynapseWeight[w-1][x][y][c]/timeDecay)* math.exp(1)
             internalStateInput = -1*internalStateInputSum
             errorInput = errorOutput*outputInternalState*internalStateInput
             inputWeight = 0
@@ -225,13 +221,12 @@ while epoch <= maxEpoch:
                       alphaFunctionInput = previousSynapseWeight[w-1][x][c][e] * (adjustedTimeInput/timeDecay)* math.exp(1- (adjustedTimeInput/timeDecay))
                       if adjustedTimeInput > 0:
                         inputInternalStateDenominator = inputInternalStateDenominator + alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay)
-                      if adjustedTimeInput == 0:
-                        inputInternalStateDenominator = inputInternalStateDenominator + (previousSynapseWeight[w-1][x][y][c]/timeDecay)* math.exp(1)
                 inputInternalState = -1/inputInternalStateDenominator
                 internalStateWeight = 0
                 for c in range (0, len(networkOutput[w-1][y])):
                   adjustedTimeInput = networkOutput[w][x][b] - networkOutput[w-1][y][c] - synapseDelay[z]
-                  internalStateWeight = internalStateWeight + (adjustedTimeInput/timeDecay)* math.exp(1- (adjustedTimeInput/timeDecay))
+                  if adjustedTimeInput > 0:
+                    internalStateWeight = internalStateWeight + (adjustedTimeInput/timeDecay)* math.exp(1- (adjustedTimeInput/timeDecay))
                 inputWeight = inputInternalState*internalStateWeight
               if b > 0:
                 inputInternalStateDenominator = 0
@@ -239,20 +234,26 @@ while epoch <= maxEpoch:
                   for d in range (0, len(networkOutput[w-1][c])):
                     for e in range (0, synapseNumber):
                       adjustedTimeInput = networkOutput[w][x][b] - networkOutput[w-1][c][d] - synapseDelay[e]
-                      alphaFunctionInput = previousSynapseWeight[w-1][x][c][e] * (adjustedTimeInput/timeDecay)* math.exp(1- (adjustedTimeInput/timeDecay))
+                      if adjustedTimeInput > 0:
+                        alphaFunctionInput = previousSynapseWeight[w-1][x][c][e] * (adjustedTimeInput/timeDecay)* math.exp(1- (adjustedTimeInput/timeDecay))
                       adjustedTimeRefractoriness = networkOutput[w][x][b] - networkOutput[w][x][b-1]
                       refractorinessInput = -2*neuronThreshold* math.exp(-adjustedTimeRefractoriness/refractorinessDecay)
+                      if adjustedTimeRefractoriness <= 0:
+                        refractorinessInput = 0
                       if adjustedTimeInput > 0:
                         inputInternalStateDenominator = inputInternalStateDenominator + alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay) + (2*neuronThreshold/refractorinessDecay)*refractorinessInput
-                      if adjustedTimeInput == 0:
-                        inputInternalStateDenominator = inputInternalStateDenominator + (previousSynapseWeight[w-1][x][c][e]/timeDecay)* math.exp(1) + (2*neuronThreshold/refractorinessDecay)*refractorinessInput
+                      if adjustedTimeInput <= 0:
+                        inputInternalStateDenominator = inputInternalStateDenominator + (2*neuronThreshold/refractorinessDecay)*refractorinessInput
                 inputInternalState = -1/inputInternalStateDenominator
                 internalStateWeight = 0
                 for c in range (0, len(networkOutput[w-1][y])):
                   adjustedTimeInput = networkOutput[w][x][b] - networkOutput[w-1][y][c] - synapseDelay[z]
-                  internalStateWeight = internalStateWeight + (adjustedTimeInput/timeDecay)* math.exp(1- (adjustedTimeInput/timeDecay))
+                  if adjustedTimeInput > 0:
+                    internalStateWeight = internalStateWeight + (adjustedTimeInput/timeDecay)* math.exp(1- (adjustedTimeInput/timeDecay))
                 adjustedTimeRefractoriness = networkOutput[w][x][b] - networkOutput[w][x][b-1]
                 refractorinessInput = -2*neuronThreshold* math.exp(-adjustedTimeRefractoriness/refractorinessDecay)
+                if adjustedTimeRefractoriness < 0: 
+                  refractorinessInput = 0
                 internalStateInput = (2*neuronThreshold/refractorinessDecay)*refractorinessInput
                 inputWeight = inputInternalState*(internalStateWeight+internalStateInput*inputWeight)
             errorGradient = errorGradient + errorInput*inputWeight
