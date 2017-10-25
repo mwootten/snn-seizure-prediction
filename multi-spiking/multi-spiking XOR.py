@@ -177,11 +177,11 @@ while epoch <= maxEpoch:
           for b in range (0, len(networkOutput[-2][a])):
             for c in range (0, synapseNumber):
               adjustedTimeOutput = networkOutput[-1][x][0] - networkOutput[-2][a][b] - synapseDelay[c]
-              if adjustedTimeOutput == 0:
-                adjustedTimeOutput = 0.1
-                 # arbitrarily changing 0 values to 0.1 so no divide by 0 error
               alphaFunctionOutput = previousSynapseWeight[-1][x][a][c] * (adjustedTimeOutput/timeDecay) * math.exp(1 - (adjustedTimeOutput/timeDecay))
-              denominatorOutputInternalState = denominatorOutputInternalState + alphaFunctionOutput*(1/adjustedTimeOutput - 1/timeDecay)
+              if adjustedTimeOutput > 0:
+                denominatorOutputInternalState = denominatorOutputInternalState + alphaFunctionOutput*(1/adjustedTimeOutput - 1/timeDecay)
+              if adjustedTimeOutput == 0:
+                denominatorOutputInternalState = denominatorOutputInternalState + (previousSynapseWeight[-1][x][a][c]/timeDecay)* math.exp(1)
         outputInternalState = -1 / (denominatorOutputInternalState)
         errorGradient = errorOutput * outputInternalState * internalStateWeight
         synapseWeight[-1][x][y][z] = previousSynapseWeight[-1][x][y][z] - learningRate*errorGradient
@@ -197,21 +197,21 @@ while epoch <= maxEpoch:
               for c in range (0, len(networkOutput[-2][b])):
                 for d in range (0, synapseNumber):
                   adjustedTimeOutput = networkOutput[-1][a][0] - networkOutput[-2][b][c] - synapseDelay[d]
-                  if adjustedTimeOutput == 0:
-                    adjustedTimeOutput = 0.1
-                 # arbitrarily changing 0 values to 0.1 so no divide by 0 error
                   alphaFunctionOutput = previousSynapseWeight[-1][a][b][d] * (adjustedTimeOutput/timeDecay)* math.exp(1- (adjustedTimeOutput/timeDecay))
-                  denominatorOutputInternalState = denominatorOutputInternalState + alphaFunctionOutput*(1/adjustedTimeOutput - 1/timeDecay)
+                  if adjustedTimeOutput > 0:
+                    denominatorOutputInternalState = denominatorOutputInternalState + alphaFunctionOutput*(1/adjustedTimeOutput - 1/timeDecay)
+                  if adjustedTimeOutput == 0:
+                    denominatorOutputInternalState = denominatorOutputInternalState + (previousSynapseWeight[-1][a][b][d]/timeDecay)* math.exp(1)
             outputInternalState = -1 / (denominatorOutputInternalState)
             internalStateInputSum = 0
             for b in range (0, len(networkOutput[w][x])):
               for c in range (0, synapseNumber):
                 adjustedTimeInput = networkOutput[-1][a][0] - networkOutput[w][x][b] - synapseDelay[c]
-                if adjustedTimeInput == 0:
-                  adjustedTimeInput = 0.1
-                 # arbitrarily changing 0 values to 0.1 so no divide by 0 error
                 alphaFunctionInput = previousSynapseWeight[w-1][x][y][c] * (adjustedTimeInput)* math.exp(1-adjustedTimeInput/timeDecay)
-                internalStateInputSum = internalStateInputSum + alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay)
+                if adjustedTimeOutput > 0:
+                  internalStateInputSum = internalStateInputSum + alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay)
+                if adjustedTimeOutput == 0:
+                  internalStateInoutSum = internalStateInputSum + (previousSynapseWeight[w-1][x][y][c]/timeDecay)* math.exp(1)
             internalStateInput = -1*internalStateInputSum
             errorInput = errorOutput*outputInternalState*internalStateInput
             inputWeight = 0
@@ -222,11 +222,11 @@ while epoch <= maxEpoch:
                   for d in range (0, len(networkOutput[w-1][c])):
                     for e in range (0, synapseNumber):
                       adjustedTimeInput = networkOutput[w][x][b] - networkOutput[w-1][c][d] - synapseDelay[e]
-                      if adjustedTimeInput == 0:
-                        adjustedTimeInput = 0.1
-                 # arbitrarily changing 0 values to 0.1 so no divide by 0 error
                       alphaFunctionInput = previousSynapseWeight[w-1][x][c][e] * (adjustedTimeInput/timeDecay)* math.exp(1- (adjustedTimeInput/timeDecay))
-                      inputInternalStateDenominator = inputInternalStateDenominator + alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay)
+                      if adjustedTimeInput > 0:
+                        inputInternalStateDenominator = inputInternalStateDenominator + alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay)
+                      if adjustedTimeInput == 0:
+                        inputInternalStateDenominator = inputInternalStateDenominator + (previousSynapseWeight[w-1][x][y][c]/timeDecay)* math.exp(1)
                 inputInternalState = -1/inputInternalStateDenominator
                 internalStateWeight = 0
                 for c in range (0, len(networkOutput[w-1][y])):
@@ -240,12 +240,12 @@ while epoch <= maxEpoch:
                     for e in range (0, synapseNumber):
                       adjustedTimeInput = networkOutput[w][x][b] - networkOutput[w-1][c][d] - synapseDelay[e]
                       alphaFunctionInput = previousSynapseWeight[w-1][x][c][e] * (adjustedTimeInput/timeDecay)* math.exp(1- (adjustedTimeInput/timeDecay))
-                      # arbitrarily setting alphaFunctionInput to 0.1 if its 0 to avoid divide by 0
-                      if adjustedTimeInput == 0:
-                        adjustedTimeInput = 0.1
                       adjustedTimeRefractoriness = networkOutput[w][x][b] - networkOutput[w][x][b-1]
                       refractorinessInput = -2*neuronThreshold* math.exp(-adjustedTimeRefractoriness/refractorinessDecay)
-                      inputInternalStateDenominator = inputInternalStateDenominator + alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay) + (2*neuronThreshold/refractorinessDecay)*refractorinessInput
+                      if adjustedTimeInput > 0:
+                        inputInternalStateDenominator = inputInternalStateDenominator + alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay) + (2*neuronThreshold/refractorinessDecay)*refractorinessInput
+                      if adjustedTimeInput == 0:
+                        inputInternalStateDenominator = inputInternalStateDenominator + (previousSynapseWeight[w-1][x][c][e]/timeDecay)* math.exp(1) + (2*neuronThreshold/refractorinessDecay)*refractorinessInput
                 inputInternalState = -1/inputInternalStateDenominator
                 internalStateWeight = 0
                 for c in range (0, len(networkOutput[w-1][y])):
