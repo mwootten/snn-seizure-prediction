@@ -1,8 +1,15 @@
 import math
 from random import randint, seed
 from copy import deepcopy
+import json
 
 seed(int(input("Random seed? ")))
+
+constantInput = []
+useConstantInput = (input("Train on same input (yes/no)? ") == "yes")
+if useConstantInput:
+    [x_in, y_in] = json.loads(input("Which input (format [a, b])? "))
+    constantInput = [[x_in], [y_in], [0]]
 
 neuronThreshold = 1
 synapseNumber = int(input("Number of Synapses?"))
@@ -67,7 +74,7 @@ for a in range (0, len(network)-1):
     # adding the refractoriness term for the most recent output
       if internalState > neuronThreshold:
           output.append(time)
-      # heuristic rule
+      # heuristic rule: prevent spikes that are <= 2 ms apart
       if len(output) > 1:
         if time - output[-2] <= 2:
           output.pop()
@@ -109,7 +116,10 @@ epoch = 0
 errorTime = []
 while epoch <= maxEpoch:
   epoch = epoch + 1
-  neuronInput = [[randint(0,1)*6],[randint(0,1)*6], [0]]
+  if useConstantInput:
+    neuronInput = constantInput
+  else:
+    neuronInput = [[randint(0,1)*6],[randint(0,1)*6], [0]]
   expectedOutput = [abs(neuronInput[0][0]-neuronInput[1][0]) + 10]
   layerOutput = []
   networkOutput = [deepcopy(neuronInput)]
@@ -270,3 +280,4 @@ while epoch <= maxEpoch:
                 inputWeight = inputInternalState*(internalStateWeight+internalStateInput*inputWeight)
             errorGradient = errorGradient + errorInput*inputWeight
           synapseWeight[w-1][x][y][z] = previousSynapseWeight[w-1][x][y][z] - learningRate*errorGradient
+print(errorTime)
