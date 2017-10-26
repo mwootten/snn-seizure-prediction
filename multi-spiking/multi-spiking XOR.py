@@ -206,7 +206,7 @@ while epoch <= maxEpoch:
               for c in range (0, synapseNumber):
                 adjustedTimeInput = networkOutput[-1][a][0] - networkOutput[w][x][b] - synapseDelay[c]
                 alphaFunctionInput = previousSynapseWeight[w-1][x][y][c] * (adjustedTimeInput)* math.exp(1-adjustedTimeInput/timeDecay)
-                if adjustedTimeOutput > 0:
+                if adjustedTimeInput > 0:
                   internalStateInputSum = internalStateInputSum + alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay)
             internalStateInput = -1*internalStateInputSum
             errorInput = errorOutput*outputInternalState*internalStateInput
