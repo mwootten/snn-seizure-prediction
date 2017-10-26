@@ -1,5 +1,6 @@
 import math
 from random import randint, seed
+from copy import deepcopy
 
 seed(int(input("Random seed? ")))
 
@@ -40,7 +41,7 @@ for x in range (0, synapseNumber-1):
 timeDecay = encodingInterval + 1
 # setting time decay based on encoding interval
 layerOutput = []
-networkOutput = [neuronInput]
+networkOutput = [deepcopy(neuronInput)]
 networkInternalState =[]
 for a in range (0, len(network)-1):
   outputNeuronNetworkOutput = []
@@ -80,7 +81,7 @@ for a in range (0, len(network)-1):
     layerInternalState.append(neuronInternalState)
     outputNeuronNetworkOutput.append(output)
   networkInternalState.append(layerInternalState)
-  neuronInput = layerOutput
+  neuronInput = deepcopy(layerOutput)
   networkOutput.append(outputNeuronNetworkOutput)
 sumSynapseWeight = 0
 weightNumber = 0
@@ -111,7 +112,7 @@ while epoch <= maxEpoch:
   neuronInput = [[randint(0,1)*6],[randint(0,1)*6], [0]]
   expectedOutput = [abs(neuronInput[0][0]-neuronInput[1][0]) + 10]
   layerOutput = []
-  networkOutput = [neuronInput]
+  networkOutput = [deepcopy(neuronInput)]
   networkInternalState =[]
   for a in range (0, len(network)-1):
     outputNeuronNetworkOutput = []
@@ -145,7 +146,7 @@ while epoch <= maxEpoch:
         neuronInternalState.append(internalState)
         if time == simulationTime:
           if len(output) == 0:
-            sortedInternalState = neuronInternalState
+            sortedInternalState = deepcopy(neuronInternalState)
             sortedInternalState.sort()
             output.append(neuronInternalState.index(sortedInternalState[-1]))
             # heuristic rule
@@ -156,14 +157,14 @@ while epoch <= maxEpoch:
       layerInternalState.append(neuronInternalState)
       outputNeuronNetworkOutput.append(output)
     networkInternalState.append(layerInternalState)
-    neuronInput = layerOutput
+    neuronInput = deepcopy(layerOutput)
     networkOutput.append(outputNeuronNetworkOutput)
   sumSquareOutputDifference = 0
   for x in range (0, len(expectedOutput)):
     sumSquareOutputDifference = sumSquareOutputDifference + (networkOutput[-1][x][0] - expectedOutput[x])**2
   error = 0.5*sumSquareOutputDifference
   errorTime.append(error)
-  previousSynapseWeight = synapseWeight
+  previousSynapseWeight = deepcopy(synapseWeight)
   for x in range (0, network[-1]):
     for y in range (0, network[-2]):
       for z in range (0, synapseNumber):
@@ -182,6 +183,8 @@ while epoch <= maxEpoch:
               alphaFunctionOutput = previousSynapseWeight[-1][x][a][c] * (adjustedTimeOutput/timeDecay) * math.exp(1 - (adjustedTimeOutput/timeDecay))
               if adjustedTimeOutput > 0:
                 denominatorOutputInternalState = denominatorOutputInternalState + alphaFunctionOutput*(1/adjustedTimeOutput - 1/timeDecay)
+        if denominatorOutputInternalState < 0.1:
+          denominatorOutputInternalState = 0.1
         outputInternalState = -1 / (denominatorOutputInternalState)
         errorGradient = errorOutput * outputInternalState * internalStateWeight
         synapseWeight[-1][x][y][z] = previousSynapseWeight[-1][x][y][z] - learningRate*errorGradient
@@ -200,6 +203,8 @@ while epoch <= maxEpoch:
                   alphaFunctionOutput = previousSynapseWeight[-1][a][b][d] * (adjustedTimeOutput/timeDecay)* math.exp(1- (adjustedTimeOutput/timeDecay))
                   if adjustedTimeOutput > 0:
                     denominatorOutputInternalState = denominatorOutputInternalState + alphaFunctionOutput*(1/adjustedTimeOutput - 1/timeDecay)
+            if denominatorOutputInternalState < 0.1:
+              denominatorOutputInternalState = 0.1
             outputInternalState = -1 / (denominatorOutputInternalState)
             internalStateInputSum = 0
             for b in range (0, len(networkOutput[w][x])):
