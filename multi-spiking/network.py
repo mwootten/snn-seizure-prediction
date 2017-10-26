@@ -69,6 +69,24 @@ def networkError(observed, expected):
     return 1/2 * sum((o - e) ** 2)
 
 
+# The equation this models (in case this ever goes to a Jupyter notebook):
+# $$ x_j(t) = \sum_{i=1}^{N_{l+1}} \sum_{k=1}^{K} \sum_{g=1}^{G_i} w^k_{ij}
+# \varepsilon(t-t_i^{(g)}-d^k) + \rho(t-t_j^{(f)}) $$
+def newNeuronState(weights, presynapticLayerStates, currentState, time, w, x):
+    internalState = 0
+    # y (with meaning as above) is "i" in the paper
+    for y in range(len(presynapticStates)):
+        # synapse number should be constant throughout the network, but for
+        # clarity's sake is computed in this loop. It is "k" in the paper.
+        for z in range(len(presynapticStates[y])):
+            for spikeTime in presynapticStates[y][z]:
+                weight = weights[w][x][y][z]
+                adjustedTime = time - spikeTime - synapseDelay[z]
+                internalState += weight * spikeResponse(adjustedTime)
+    timeSinceLastSpike = time - currentState[-1]
+    internalState += refractoriness(timeSinceLastSpike)
+
+
 class MultiSpikingNetwork(object):
     """
     """
@@ -83,7 +101,7 @@ class MultiSpikingNetwork(object):
 
     def makeXorNetwork():
         # Explanation of inputs:
-        # 3: two inputs + 1 bias neuron
+        # 3: 2 inputs + 1 bias neuron
         # 5: Arbitary, from what I can tell
         # 1: one output (of the XOR function)
 
@@ -106,8 +124,12 @@ class MultiSpikingNetwork(object):
             # for every neuron in that layer...
             for x in range(0, len(self.weights[w])):
                 # This part of the loop is specific to each individual neuron.
-                pass
+                for y in range(0, 0):
+                    for z in range(0, 0):
+                        for spikeTime in inputs[]:
+                            pass
 
 
-if __name__ == "__main__":  # run this code only if executed, not when imported
+# run this code only if executed, not when imported
+if __name__ == "__main__":
     print(MultiSpikingNetwork.makeXorNetwork().weights)

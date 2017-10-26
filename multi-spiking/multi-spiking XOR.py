@@ -54,8 +54,8 @@ for a in range (0, len(network)-1):
     while time <= simulationTime:
       internalState = 0
       for x in range (0, network[a]):
-        for z in range (0, len(neuronInput[x])):
-          for y in range (0, synapseNumber):
+        for y in range (0, synapseNumber):
+          for z in range (0, len(neuronInput[x])):
             adjustedTime = -neuronInput[x][z] - synapseDelay[y] + time
             if adjustedTime > 0:
               internalState = internalState + synapseWeight[a][b][x][y] * (adjustedTime/timeDecay) * math.exp(1 - (adjustedTime/timeDecay))
@@ -252,7 +252,7 @@ while epoch <= maxEpoch:
                     internalStateWeight = internalStateWeight + (adjustedTimeInput/timeDecay)* math.exp(1- (adjustedTimeInput/timeDecay))
                 adjustedTimeRefractoriness = networkOutput[w][x][b] - networkOutput[w][x][b-1]
                 refractorinessInput = -2*neuronThreshold* math.exp(-adjustedTimeRefractoriness/refractorinessDecay)
-                if adjustedTimeRefractoriness < 0: 
+                if adjustedTimeRefractoriness < 0:
                   refractorinessInput = 0
                 internalStateInput = (2*neuronThreshold/refractorinessDecay)*refractorinessInput
                 inputWeight = inputInternalState*(internalStateWeight+internalStateInput*inputWeight)
