@@ -215,7 +215,7 @@ while epoch <= maxEpoch:
                   alphaFunctionOutput = previousSynapseWeight[-1][a][b][d] * (adjustedTimeOutput/timeDecay)* math.exp(1- (adjustedTimeOutput/timeDecay))
                   if adjustedTimeOutput > 0:
                     denominatorOutputInternalState = denominatorOutputInternalState + alphaFunctionOutput*(1/adjustedTimeOutput - 1/timeDecay)
-                  if adjustedTimeOutput = 0:
+                  if adjustedTimeOutput == 0:
                     denominatorOutputInternalState = denominatorOutputInternalState + (previousSynapseWeight[-1][a][b][d]/timeDecay)*math.exp(1)
             if denominatorOutputInternalState < 0.1:
               denominatorOutputInternalState = 0.1
