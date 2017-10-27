@@ -193,7 +193,7 @@ while epoch <= maxEpoch:
               alphaFunctionOutput = previousSynapseWeight[-1][x][a][c] * (adjustedTimeOutput/timeDecay) * math.exp(1 - (adjustedTimeOutput/timeDecay))
               if adjustedTimeOutput > 0:
                 denominatorOutputInternalState = denominatorOutputInternalState + alphaFunctionOutput*(1/adjustedTimeOutput - 1/timeDecay)
-              if adjustedTimeOutput = 0:
+              if adjustedTimeOutput == 0:
                 denominatorOutputInternalState = denominatorOutputInternalState + (previousSynapseWeight[-1][x][a][c]/timeDecay)* math.exp(1)
         if denominatorOutputInternalState < 0.1:
           denominatorOutputInternalState = 0.1
@@ -246,7 +246,7 @@ while epoch <= maxEpoch:
                   adjustedTimeInput = networkOutput[w][x][b] - networkOutput[w-1][y][c] - synapseDelay[z]
                   if adjustedTimeInput > 0:
                     internalStateWeight = internalStateWeight + (adjustedTimeInput/timeDecay)* math.exp(1- (adjustedTimeInput/timeDecay))
-                  if adjustedTimeInput = 0:
+                  if adjustedTimeInput == 0:
                     internalStateWeight = internalStateWeight + (previousSynapseWeight[-1][a][b][d]/timeDecay)*math.exp(1)
                 inputWeight = inputInternalState*internalStateWeight
               if b > 0:
@@ -264,7 +264,7 @@ while epoch <= maxEpoch:
                         inputInternalStateDenominator = inputInternalStateDenominator + alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay) + (2*neuronThreshold/refractorinessDecay)*refractorinessInput
                       if adjustedTimeInput < 0:
                         inputInternalStateDenominator = inputInternalStateDenominator + (2*neuronThreshold/refractorinessDecay)*refractorinessInput
-                      if adjustedTimeInput = 0:
+                      if adjustedTimeInput == 0:
                         inputInternalStateDenominator = inputInternalStateDenominator +  (previousSynapseWeight[w-1][x][c][e]/timeDecay)*math.exp(1) + (2*neuronThreshold/refractorinessDecay)*refractorinessInput
                 inputInternalState = -1/inputInternalStateDenominator
                 internalStateWeight = 0
