@@ -11,6 +11,8 @@ NEURON_THRESHOLD = 1
 # * z - the index among the multiple synapses connecting those two
 #
 # Note that a (w, x) pair is sufficient to uniquely identify a neuron.
+# Also, contrary to the paper, layers are numbered going forwards, and are
+# zero-based. The input layer is 0, and the output layer (in this case) is 2.
 
 
 def initWeights(layerNeuronCounts, synapsesPerConnection):
@@ -72,6 +74,13 @@ def networkError(observed, expected):
 # The equation this models (in case this ever goes to a Jupyter notebook):
 # $$ x_j(t) = \sum_{i=1}^{N_{l+1}} \sum_{k=1}^{K} \sum_{g=1}^{G_i} w^k_{ij}
 # \varepsilon(t-t_i^{(g)}-d^k) + \rho(t-t_j^{(f)}) $$
+
+# Arguments:
+# weights: same format as the output of initWeights
+# presynapticLayerStates: indices are [neuron index][spike index]
+# currentState: an ordered array of spike times for the current neuron
+# time: the whole-simulation time
+# w and x - as defined in top comment
 def newNeuronState(weights, presynapticLayerStates, currentState, time, w, x):
     internalState = 0
     # y (with meaning as above) is "i" in the paper
@@ -79,12 +88,14 @@ def newNeuronState(weights, presynapticLayerStates, currentState, time, w, x):
         # synapse number should be constant throughout the network, but for
         # clarity's sake is computed in this loop. It is "k" in the paper.
         for z in range(len(presynapticStates[y])):
-            for spikeTime in presynapticStates[y][z]:
+            # "g" in the paper
+            for spikeTime in presynapticStates[y]:
                 weight = weights[w][x][y][z]
-                adjustedTime = time - spikeTime - synapseDelay[z]
+                adjustedTime = time - (spikeTime + synapseDelay[z])
                 internalState += weight * spikeResponse(adjustedTime)
     timeSinceLastSpike = time - currentState[-1]
     internalState += refractoriness(timeSinceLastSpike)
+    return internalState
 
 
 class MultiSpikingNetwork(object):
@@ -118,16 +129,20 @@ class MultiSpikingNetwork(object):
         # end of the simulation (rendering them useless)
         assert lastOutput <= duration
 
-        # for every layer in the network except the first, which is not a
-        # destination for any signals...
-        for w in range(1, len(self.weights)):
-            # for every neuron in that layer...
-            for x in range(0, len(self.weights[w])):
-                # This part of the loop is specific to each individual neuron.
-                for y in range(0, 0):
-                    for z in range(0, 0):
-                        for spikeTime in inputs[]:
-                            pass
+        for time in range(duration):
+            # for every layer in the network except the first, which is not a
+            # destination for any signals...
+            for w in range(1, len(self.weights)):
+                # for every neuron in that layer...
+                for x in range(0, len(self.weights[w])):
+                    # This part of the loop is specific to each individual
+                    # neuron. For every neuron presynaptic to the (w, x)
+                    # neuron...
+                    for y in range(0, len(self.weights[w - 1])):
+                        for z in range(self.synapsesPerConnection):
+                            for spikeTime in inputs[y]:
+                                newState = newNeuronState(self.weights, inputs
+                                                          [], time, w, x)
 
 
 # run this code only if executed, not when imported
