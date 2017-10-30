@@ -182,9 +182,8 @@ while epoch <= maxEpoch:
         internalStateWeight = 0
         for a in range (0, len(networkOutput[-2][y])):
           adjustedTimeOutput = networkOutput[-1][x][0] - networkOutput[-2][y][a] - synapseDelay[z]
-          internalStateWeight = internalStateWeight + (adjustedTimeOutput/timeDecay) * math.exp(1 - (adjustedTimeOutput/timeDecay))
-          if adjustedTimeOutput <= 0:
-            internalStateWeight = internalStateWeight
+          if adjustedTimeOutput > 0:
+            internalStateWeight = internalStateWeight + (adjustedTimeOutput/timeDecay) * math.exp(1 - (adjustedTimeOutput/timeDecay))
         denominatorOutputInternalState = 0
         for a in range (0, network[-2]):
           for b in range (0, len(networkOutput[-2][a])):
@@ -240,6 +239,8 @@ while epoch <= maxEpoch:
                       alphaFunctionInput = previousSynapseWeight[w-1][x][c][e] * (adjustedTimeInput/timeDecay)* math.exp(1- (adjustedTimeInput/timeDecay))
                       if adjustedTimeInput > 0:
                         inputInternalStateDenominator = inputInternalStateDenominator + alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay)
+                if inputInternalStateDenominator < 0.1:
+                    inputInternalStateDenominator = 0.1
                 inputInternalState = -1/inputInternalStateDenominator
                 internalStateWeight = 0
                 for c in range (0, len(networkOutput[w-1][y])):
@@ -266,6 +267,8 @@ while epoch <= maxEpoch:
                         inputInternalStateDenominator = inputInternalStateDenominator + (2*neuronThreshold/refractorinessDecay)*refractorinessInput
                       if adjustedTimeInput == 0:
                         inputInternalStateDenominator = inputInternalStateDenominator +  (previousSynapseWeight[w-1][x][c][e]/timeDecay)*math.exp(1) + (2*neuronThreshold/refractorinessDecay)*refractorinessInput
+                if inputInternalStateDenominator < 0.1:
+                    inputInternalStateDenominator = 0.1
                 inputInternalState = -1/inputInternalStateDenominator
                 internalStateWeight = 0
                 for c in range (0, len(networkOutput[w-1][y])):
