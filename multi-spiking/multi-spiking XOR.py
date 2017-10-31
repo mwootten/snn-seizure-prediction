@@ -123,7 +123,7 @@ epochErrorTime = []
 while iteration <= maxIteration:
   iteration = iteration + 1
   if useConstantInput:
-    neuronInput = constantInput
+    neuronInput = deepcopy(constantInput)
   else:
     epochInputDataLength = len(epochInputData)
     if epochInputDataLength == 0:
@@ -185,7 +185,7 @@ while iteration <= maxIteration:
     sumSquareOutputDifference = sumSquareOutputDifference + (networkOutput[-1][x][0] - expectedOutput[x])**2
   error = 0.5*sumSquareOutputDifference
   errorTime.append(error)
-  if (iteration)%4 == 0:
+  if (iteration)%len(inputData) == 0:
     meanSquaredError = (errorTime[-1]+errorTime[-2]+errorTime[-3]+errorTime[-4])/4
     epochErrorTime.append(meanSquaredError)
   previousSynapseWeight = deepcopy(synapseWeight)
