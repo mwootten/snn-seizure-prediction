@@ -112,15 +112,26 @@ for w in range (1, len(network)):
 print("Network Outputs: " + str(networkOutput))
 learningRate = float(input("Learning Rate?"))
 maxEpoch = int(input("Max Epochs?"))
-epoch = 0
+maxIteration = maxEpoch*4
+if useConstantInput:
+    maxIteration = maxEpoch
+iteration = 0
 errorTime = []
-while epoch <= maxEpoch:
-  epoch = epoch + 1
+inputData = [[[0],[0],[0]],[[0],[6],[0]],[[6],[0],[0]],[[6],[6],[0]]]
+epochInputData = deepcopy(inputData)
+epochErrorTime = []
+while iteration <= maxIteration:
+  iteration = iteration + 1
   if useConstantInput:
     neuronInput = constantInput
   else:
-    neuronInput = [[randint(0,1)*6],[randint(0,1)*6], [0]]
-  expectedOutput = [abs(neuronInput[0][0]-neuronInput[1][0]) + 10]
+    epochInputDataLength = len(epochInputData)
+    if epochInputDataLength == 0:
+        epochInputData = deepcopy(inputData)
+        neuronInput = epochInputData.pop(randint(0,len(epochInputData)-1))
+    if epochInputDataLength > 0:
+        neuronInput = epochInputData.pop(randint(0,len(epochInputData)-1))  
+  expectedOutput = [abs(neuronInput[0][0]-neuronInput[1][0]) + 10]                                      
   layerOutput = []
   networkOutput = [deepcopy(neuronInput)]
   networkInternalState =[]
@@ -174,6 +185,9 @@ while epoch <= maxEpoch:
     sumSquareOutputDifference = sumSquareOutputDifference + (networkOutput[-1][x][0] - expectedOutput[x])**2
   error = 0.5*sumSquareOutputDifference
   errorTime.append(error)
+  if (iteration)%4 == 0:
+    meanSquaredError = (errorTime[-1]+errorTime[-2]+errorTime[-3]+errorTime[-4])/4
+    epochErrorTime.append(meanSquaredError)
   previousSynapseWeight = deepcopy(synapseWeight)
   for x in range (0, network[-1]):
     for y in range (0, network[-2]):
@@ -283,4 +297,4 @@ while epoch <= maxEpoch:
                 inputWeight = inputInternalState*(internalStateWeight+internalStateInput*inputWeight)
             errorGradient = errorGradient + errorInput*inputWeight
           synapseWeight[w-1][x][y][z] = previousSynapseWeight[w-1][x][y][z] - learningRate*errorGradient
-print(errorTime)
+print(epochErrorTime)
