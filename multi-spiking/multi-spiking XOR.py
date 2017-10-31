@@ -186,7 +186,10 @@ while iteration <= maxIteration:
   error = 0.5*sumSquareOutputDifference
   errorTime.append(error)
   if (iteration)%len(inputData) == 0:
-    meanSquaredError = (errorTime[-1]+errorTime[-2]+errorTime[-3]+errorTime[-4])/4
+    squaredErrorSum = 0
+    for x in range (0, len(inputData)):
+        squaredErrorSum += errorTime[-(x+1)]
+    meanSquaredError = squaredErrorSum/len(inputData)
     epochErrorTime.append(meanSquaredError)
   previousSynapseWeight = deepcopy(synapseWeight)
   for x in range (0, network[-1]):
