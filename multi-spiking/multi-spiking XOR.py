@@ -112,7 +112,7 @@ for w in range (1, len(network)):
 print("Network Outputs: " + str(networkOutput))
 learningRate = float(input("Learning Rate?"))
 maxEpoch = int(input("Max Epochs?"))
-maxIteration = maxEpoch*4
+maxIteration = maxEpoch*len(inputData)
 if useConstantInput:
     maxIteration = maxEpoch
 iteration = 0
@@ -120,7 +120,7 @@ errorTime = []
 inputData = [[[0],[0],[0]],[[0],[6],[0]],[[6],[0],[0]],[[6],[6],[0]]]
 epochInputData = deepcopy(inputData)
 epochErrorTime = []
-while iteration <= maxIteration:
+while iteration < maxIteration:
   iteration = iteration + 1
   if useConstantInput:
     neuronInput = deepcopy(constantInput)
