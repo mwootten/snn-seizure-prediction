@@ -1,5 +1,16 @@
 import networkx as nx
 from enum import Enum
+import math
+
+layerSizes = [3, 5, 1]
+synapsesPerConnection = 4
+lastOutput = 16
+simulationTime = 25
+refractorinessDecay = 80
+encodingInterval = 6
+timeDecay = 7
+neuronThreshold = 1
+xorInput = [True, True]
 
 
 class NeuronType(Enum):
@@ -26,13 +37,19 @@ class Neuron:
     def __repr__(self):
         return str(self.type)
 
-    def update(self):
-        pass
+    def timeSinceLastSpike(self, time):
+        if len(self.spikeTimes) == 0:
+            return float('inf')
+        else:
+            return time - self.spikeTimes[-1]
 
-
-layerSizes = [3, 5, 1]
-synapsesPerConnection = 4
-lastOutput = 16
+    def update(self, internalState, time):
+        print(" -- ".join(map(repr, [self, internalState, time])))
+        self.internalState = internalState
+        if internalState > neuronThreshold:
+            # heuristic to prevent rapid repeated spikes
+            if postneuron.timeSinceLastSpike(time) > 2:
+                self.spikeTimes.append(time)
 
 
 def createLayer(layerSize, type):
@@ -43,18 +60,42 @@ def synapseDelay(synapseNumber):
     return 1 + synapseNumber * int(lastOutput / synapsesPerConnection)
 
 
-def spikeResponse(time, timeDecay):
+def spikeResponse(time):
     if time > 0:
         return (time/timeDecay) * math.exp(1 - (time/timeDecay))
     else:
         return 0
 
 
-def refractoriness(time, refractorinessDecay):
+def refractoriness(time):
     if time > 0:
-        return -2 * NEURON_THRESHOLD * math.exp(-time / refractorinessDecay)
+        return -2 * neuronThreshold * math.exp(-time)
     else:
         return 0
+
+
+def boolToSpikes(b):
+    if b:
+        return [0]
+    else:
+        return [encodingInterval]
+
+
+def createXorInputNeurons(lhs, rhs):
+    lhsNeuron = Neuron(boolToSpikes(lhs), 0, NeuronType.INPUT)
+    rhsNeuron = Neuron(boolToSpikes(rhs), 0, NeuronType.INPUT)
+    biasNeuron = Neuron(boolToSpikes(True), 0, NeuronType.INPUT)
+    return [lhsNeuron, rhsNeuron, biasNeuron]
+
+
+def perNeuronAdjustment(time, preneuron, postneuron):
+    internalState = 0
+    synapses = G.edge[preneuron][postneuron]
+    for (num, data) in synapses.items():
+        for spikeTime in preneuron.spikeTimes:
+            adjustedTime = time - (spikeTime + data['delay'])
+            internalState += data['weight'] * spikeResponse(adjustedTime)
+    return internalState
 
 
 G = nx.MultiDiGraph()
@@ -62,7 +103,9 @@ G = nx.MultiDiGraph()
 previousLayer = []
 for layerSize in layerSizes:
     if previousLayer == []:
-        layer = createLayer(layerSize, NeuronType.INPUT)
+        # Setting up input neurons is a little more complicated.
+        # layer = createLayer(layerSize, NeuronType.INPUT)
+        layer = createXorInputNeurons(xorInput[0], xorInput[1])
         G.add_nodes_from(layer)
     else:
         layer = createLayer(layerSize, NeuronType.HIDDEN)
@@ -103,8 +146,13 @@ all_postsynaptic = [
     or (n.type == NeuronType.OUTPUT)
 ]
 
-for postneuron in all_postsynaptic:
-    preneurons = G.predecessors(postneuron)
-    for preneuron in preneurons:
-        for (synapseNum, associatedData) in G.edge[preneuron][postneuron].items():
-            print(" -- ".join(map(repr, [preneuron, postneuron, synapseNum, associatedData])))
+for time in range(simulationTime):
+    for postneuron in all_postsynaptic:
+        internalState = 0
+        for preneuron in G.predecessors(postneuron):
+            internalState += perNeuronAdjustment(time, preneuron, postneuron)
+        internalState += refractoriness(postneuron.timeSinceLastSpike(time))
+        postneuron.update(internalState, time)
+    input("")
+outN = G.nodes()[-1]
+print(outN.spikeTimes)
