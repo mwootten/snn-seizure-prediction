@@ -112,16 +112,15 @@ for w in range (1, len(network)):
 print("Network Outputs: " + str(networkOutput))
 learningRate = float(input("Learning Rate?"))
 maxEpoch = int(input("Max Epochs?"))
-maxIteration = maxEpoch*len(inputData)
 if useConstantInput:
     maxIteration = maxEpoch
-iteration = 0
+iteration = 1
 errorTime = []
 inputData = [[[0],[0],[0]],[[0],[6],[0]],[[6],[0],[0]],[[6],[6],[0]]]
+maxIteration = maxEpoch*len(inputData)
 epochInputData = deepcopy(inputData)
 epochErrorTime = []
-while iteration < maxIteration:
-  iteration = iteration + 1
+while iteration <= maxIteration:
   if useConstantInput:
     neuronInput = deepcopy(constantInput)
   else:
@@ -188,7 +187,7 @@ while iteration < maxIteration:
   if (iteration)%len(inputData) == 0:
     squaredErrorSum = 0
     for x in range (0, len(inputData)):
-        squaredErrorSum += errorTime[-(x+1)]
+        squaredErrorSum = squaredErrorSum + errorTime[-(x+1)]
     meanSquaredError = squaredErrorSum/len(inputData)
     epochErrorTime.append(meanSquaredError)
   previousSynapseWeight = deepcopy(synapseWeight)
@@ -264,8 +263,6 @@ while iteration < maxIteration:
                   adjustedTimeInput = networkOutput[w][x][b] - networkOutput[w-1][y][c] - synapseDelay[z]
                   if adjustedTimeInput > 0:
                     internalStateWeight = internalStateWeight + (adjustedTimeInput/timeDecay)* math.exp(1- (adjustedTimeInput/timeDecay))
-                  if adjustedTimeInput == 0:
-                    internalStateWeight = internalStateWeight + (previousSynapseWeight[-1][a][b][d]/timeDecay)*math.exp(1)
                 inputWeight = inputInternalState*internalStateWeight
               if b > 0:
                 inputInternalStateDenominator = 0
@@ -300,4 +297,5 @@ while iteration < maxIteration:
                 inputWeight = inputInternalState*(internalStateWeight+internalStateInput*inputWeight)
             errorGradient = errorGradient + errorInput*inputWeight
           synapseWeight[w-1][x][y][z] = previousSynapseWeight[w-1][x][y][z] - learningRate*errorGradient
+  iteration = iteration + 1
 print(epochErrorTime)
