@@ -165,10 +165,10 @@ while iteration <= maxIteration:
   # storing output time if the neuron outputs
         neuronInternalState.append(internalState)
         if time == simulationTime:
+          sortedInternalState = deepcopy(neuronInternalState)
+          sortedInternalState.sort()
           if len(output) == 0:
-            sortedInternalState = deepcopy(neuronInternalState)
-            sortedInternalState.sort()
-            output.append(neuronInternalState.index(sortedInternalState[-1]))
+                output.append(neuronInternalState.index(sortedInternalState[-1]))
             # heuristic rule
           layerOutput.append(output)
   # final printout of outputs
