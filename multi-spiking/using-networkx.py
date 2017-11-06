@@ -1,6 +1,7 @@
 import networkx as nx
 from enum import Enum
 import math
+from copy import deepcopy
 
 layerSizes = [3, 5, 1]
 synapsesPerConnection = 4
@@ -13,29 +14,15 @@ neuronThreshold = 1
 xorInput = [True, True]
 
 
-class NeuronType(Enum):
-    INPUT = 1
-    HIDDEN = 2
-    OUTPUT = 3
-
-    def __str__(self):
-        lookup = {
-            NeuronType.INPUT: "input",
-            NeuronType.HIDDEN: "hidden",
-            NeuronType.OUTPUT: "output"
-        }
-        return lookup[self]
-
-
 class Neuron:
-    """docstring for Neuron."""
-    def __init__(self, spikeTimes, internalState, type):
-        self.spikeTimes = spikeTimes
+    """Represent a single neuron, and encapsulate its internal state"""
+    def __init__(self, spikeTimes=[], internalState=0):
+        # The deepcopy is not redundant.
+        # The default parameter value is initialized exactly once
+        # Therefore, every default (every hidden/output neuron) will have the
+        # same spike times, causing great confusion
+        self.spikeTimes = deepcopy(spikeTimes)
         self.internalState = internalState
-        self.type = type
-
-    def __repr__(self):
-        return str(self.type)
 
     def timeSinceLastSpike(self, time):
         if len(self.spikeTimes) == 0:
@@ -44,16 +31,37 @@ class Neuron:
             return time - self.spikeTimes[-1]
 
     def update(self, internalState, time):
-        print(" -- ".join(map(repr, [self, internalState, time])))
         self.internalState = internalState
         if internalState > neuronThreshold:
             # heuristic to prevent rapid repeated spikes
-            if postneuron.timeSinceLastSpike(time) > 2:
+            if self.timeSinceLastSpike(time) > 2:
                 self.spikeTimes.append(time)
 
 
-def createLayer(layerSize, type):
-    return [Neuron([], 0, type) for x in range(layerSize)]
+class InputNeuron(Neuron):
+    """docstring for InputNeuron."""
+    def __repr__(self):
+        return "InputNeuron({}, {})".format(
+            self.spikeTimes, self.internalState)
+
+
+class HiddenNeuron(Neuron):
+    """docstring for HiddenNeuron."""
+    def __repr__(self):
+        return "HiddenNeuron({}, {})".format(
+            self.spikeTimes, self.internalState)
+
+
+class OutputNeuron(Neuron):
+    """docstring for OutputNeuron."""
+    def __repr__(self):
+        return "OutputNeuron({}, {})".format(
+            self.spikeTimes, self.internalState)
+
+    def update(self, internalState, time):
+        # Output neurons should spike only once
+        if len(self.spikeTimes) == 0:
+            super().update(internalState, time)
 
 
 def synapseDelay(synapseNumber):
@@ -69,7 +77,7 @@ def spikeResponse(time):
 
 def refractoriness(time):
     if time > 0:
-        return -2 * neuronThreshold * math.exp(-time)
+        return -2 * neuronThreshold * math.exp(-time/refractorinessDecay)
     else:
         return 0
 
@@ -82,13 +90,13 @@ def boolToSpikes(b):
 
 
 def createXorInputNeurons(lhs, rhs):
-    lhsNeuron = Neuron(boolToSpikes(lhs), 0, NeuronType.INPUT)
-    rhsNeuron = Neuron(boolToSpikes(rhs), 0, NeuronType.INPUT)
-    biasNeuron = Neuron(boolToSpikes(True), 0, NeuronType.INPUT)
+    lhsNeuron = InputNeuron(boolToSpikes(lhs))
+    rhsNeuron = InputNeuron(boolToSpikes(rhs))
+    biasNeuron = InputNeuron(boolToSpikes(True))
     return [lhsNeuron, rhsNeuron, biasNeuron]
 
 
-def perNeuronAdjustment(time, preneuron, postneuron):
+def perNeuronAdjustment(G, time, preneuron, postneuron):
     internalState = 0
     synapses = G.edge[preneuron][postneuron]
     for (num, data) in synapses.items():
@@ -98,33 +106,60 @@ def perNeuronAdjustment(time, preneuron, postneuron):
     return internalState
 
 
-G = nx.MultiDiGraph()
+def connectLayers(G, prelayer, postlayer, weightFunction):
+            for presynapticNeuron in prelayer:
+                for postsynapticNeuron in postlayer:
+                    for synapseNumber in range(synapsesPerConnection):
+                        G.add_edge(
+                            presynapticNeuron,
+                            postsynapticNeuron,
+                            delay=synapseDelay(synapseNumber),
+                            weight=weightFunction(
+                                presynapticNeuron,
+                                postsynapticNeuron,
+                                synapseNumber
+                            )
+                        )
 
-previousLayer = []
-for layerSize in layerSizes:
-    if previousLayer == []:
-        # Setting up input neurons is a little more complicated.
-        # layer = createLayer(layerSize, NeuronType.INPUT)
-        layer = createXorInputNeurons(xorInput[0], xorInput[1])
-        G.add_nodes_from(layer)
-    else:
-        layer = createLayer(layerSize, NeuronType.HIDDEN)
-        G.add_nodes_from(layer)
-        for presynapticNeuron in previousLayer:
-            for postsynapticNeuron in layer:
-                for synapseNumber in range(synapsesPerConnection):
-                    G.add_edge(
-                        presynapticNeuron,
-                        postsynapticNeuron,
-                        delay=synapseDelay(synapseNumber),
-                        weight=1
-                    )
-    previousLayer = layer
 
-for outputNeuron in previousLayer:
-    outputNeuron.type = NeuronType.OUTPUT
+def flatten(list):
+    return sum(list, [])
 
-# some relevent methods:
+
+class Network:
+    """docstring for Network."""
+    def __init__(self, inputLayer, layerSizes, weightFunction):
+        self.G = nx.MultiDiGraph()
+        self.G.add_nodes_from(inputLayer)
+        self.inputLayer = inputLayer
+
+        self.hiddenLayers = []
+        previousLayer = inputLayer
+        for layerSize in layerSizes[1:-1]:
+            layer = [HiddenNeuron() for x in range(layerSize)]
+            self.G.add_nodes_from(layer)
+            self.hiddenLayers.append(layer)
+            connectLayers(self.G, previousLayer, layer, weightFunction)
+            previousLayer = layer
+
+        outputLayer = [OutputNeuron() for x in range(layerSizes[-1])]
+        self.G.add_nodes_from(outputLayer)
+        connectLayers(self.G, previousLayer, outputLayer, weightFunction)
+        self.outputLayer = outputLayer
+
+        self.all_presynaptic = flatten([inputLayer] + self.hiddenLayers)
+        self.all_postsynaptic = flatten(self.hiddenLayers + [outputLayer])
+
+
+def constantOneWeightFunction(preneuron, postneuron, synapseNumber):
+    return 1.0
+
+
+def randomWeightFunction(preneuron, postneuron, synapseNumber):
+    return random.uniform(1.0, 10.0)
+
+
+# some relevant methods:
 # G.predecessors(neuron) - get the presynaptic neurons
 # G.successors(neuron) - get the postsynaptic neurons
 # G.edge[presynaptic][postsynaptic] - get a dict like:
@@ -135,24 +170,21 @@ for outputNeuron in previousLayer:
 #     3: {'delay': 13, 'weight': 1}
 # }
 
-all_presynaptic = [
-    n for n in G.nodes()
-    if (n.type == NeuronType.INPUT)
-    or (n.type == NeuronType.HIDDEN)
-]
-all_postsynaptic = [
-    n for n in G.nodes()
-    if (n.type == NeuronType.HIDDEN)
-    or (n.type == NeuronType.OUTPUT)
-]
 
-for time in range(simulationTime):
-    for postneuron in all_postsynaptic:
-        internalState = 0
-        for preneuron in G.predecessors(postneuron):
-            internalState += perNeuronAdjustment(time, preneuron, postneuron)
-        internalState += refractoriness(postneuron.timeSinceLastSpike(time))
-        postneuron.update(internalState, time)
-    input("")
-outN = G.nodes()[-1]
-print(outN.spikeTimes)
+def simulateNetwork(net, simulationTime):
+    for time in range(simulationTime):
+        for post in net.all_postsynaptic:
+            internalState = 0
+            for pre in net.G.predecessors(post):
+                internalState += perNeuronAdjustment(net.G, time, pre, post)
+            internalState += refractoriness(post.timeSinceLastSpike(time))
+            post.update(internalState, time)
+
+
+# input layer starts out here as all zeros
+initialInputLayer = [InputNeuron([0]) for x in range(layerSizes[0])]
+onesNetwork = Network(initialInputLayer, layerSizes, constantOneWeightFunction)
+
+simulateNetwork(onesNetwork, simulationTime)
+for node in onesNetwork.G.nodes():
+    print(node)
