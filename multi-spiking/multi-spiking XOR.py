@@ -3,23 +3,36 @@ import random
 from copy import deepcopy
 import json
 
-random.seed(int(input("Random seed? ")))
-
-constantInput = []
-useConstantInput = (input("Train on same input (yes/no)? ") == "yes")
-if useConstantInput:
-    [x_in, y_in] = json.loads(input("Which input (format [a, b])? "))
-    constantInput = [[x_in], [y_in], [0]]
-
 neuronThreshold = 1
-synapseNumber = int(input("Number of Synapses?"))
-network = []
-network.append(3)
-hiddenLayer = int(input("Number of Hidden Layers?"))
-for x in range (1, hiddenLayer + 1):
-  network.append(int(input("Number of Neurons in Hidden Layer " + str(x) + "?")))
-network.append(1)
-# describing network structure as neurons per layer
+
+if input("Use defaults? ") == "yes":
+    random.seed(1)
+    useConstantInput = False
+    synapseNumber = 4
+    network = [3, 5, 1]
+    simulationTime = 25
+    encodingInterval = 6
+    refractorinessDecay = 80
+    latestOutputSpike = 16
+else:
+    random.seed(int(input("Random seed? ")))
+    useConstantInput = (input("Train on same input (yes/no)? ") == "yes")
+    if useConstantInput:
+        [x_in, y_in] = json.loads(input("Which input (format [a, b])? "))
+        constantInput = [[x_in], [y_in], [0]]
+    synapseNumber = int(input("Number of Synapses?"))
+    network = []
+    network.append(3)
+    hiddenLayer = int(input("Number of Hidden Layers?"))
+    for x in range (1, hiddenLayer + 1):
+      network.append(int(input("Number of Neurons in Hidden Layer " + str(x) + "?")))
+    network.append(1)
+    # describing network structure as neurons per layer
+    simulationTime = float(input("Simulation Time?"))
+    encodingInterval = float(input("Encoding Interval?"))
+    refractorinessDecay = float(input("Refractoriness Decay?"))
+    latestOutputSpike = int(input("Latest Output Spike?"))
+
 synapseWeight = []
 for w in range (1, len(network)):
   outputNeuronWeight = []
@@ -32,24 +45,38 @@ for w in range (1, len(network)):
       inputNeuronWeight.append(synapsesPerConnection)
     outputNeuronWeight.append(inputNeuronWeight)
   synapseWeight.append(outputNeuronWeight)
-# organizing synapse weights by layer > number of neuron in layer > number of layer inputted from > synapse number
-simulationTime = float(input("Simulation Time?"))
+# Organization of synapse weights:
+# > layer
+#   > number of neuron in layer
+#     > number of layer inputted from
+#       > synapse number
 neuronInput = []
 for x in range (0, network[0]):
     neuronInput.append([0])
-encodingInterval = float(input("Encoding Interval?"))
-refractorinessDecay = float(input("Refractoriness Decay?"))
-# setting constants
-latestOutputSpike = int(input("Latest Output Spike?"))
-synapseDelay = [1]
-for x in range (0, synapseNumber-1):
-  synapseDelay.append(synapseDelay[x] + latestOutputSpike/synapseNumber - (latestOutputSpike%synapseNumber)/synapseNumber)
+synapseDelayDelta = int(latestOutputSpike / synapseNumber)
+synapseDelay = [1 + (n * synapseDelayDelta) for n in range(synapseNumber)]
 # calculating synapse delays so that they cover the simulation time
 timeDecay = encodingInterval + 1
 # setting time decay based on encoding interval
+
+
+def alpha(t):
+    if t > 0:
+        return (t / timeDecay) * math.exp(1 - (t/timeDecay))
+    else:
+        return 0
+
+
+def refractoriness(time):
+    if time > 0:
+        return -2 * neuronThreshold * math.exp(-time/refractorinessDecay)
+    else:
+        return 0
+
+
 layerOutput = []
 networkOutput = [deepcopy(neuronInput)]
-networkInternalState =[]
+networkInternalState = []
 for a in range (0, len(network)-1):
   outputNeuronNetworkOutput = []
   layerInternalState = []
@@ -65,12 +92,12 @@ for a in range (0, len(network)-1):
         for y in range (0, synapseNumber):
           for z in range (0, len(neuronInput[x])):
             adjustedTime = -neuronInput[x][z] - synapseDelay[y] + time
-            if adjustedTime > 0:
-              internalState = internalState + synapseWeight[a][b][x][y] * (adjustedTime/timeDecay) * math.exp(1 - (adjustedTime/timeDecay))
+            internalState += synapseWeight[a][b][x][y] * alpha(adjustedTime)
     # summing alpha function values for all received inputs to a neuron
-    # an input is recieved from the previous layer when the sum of the input time and the delay is equal to the time
+    # an input is recieved from the previous layer when the sum of the input
+    # time and the delay is equal to the time
       if len(output) > 0:
-            internalState = internalState - 2 * neuronThreshold * math.exp(-1*(time - output[-1])/refractorinessDecay)
+            internalState += refractoriness(time - output[-1])
     # adding the refractoriness term for the most recent output
       if internalState > neuronThreshold:
           output.append(time)
@@ -106,7 +133,7 @@ for w in range (1, len(network)):
   for x in range (0, network[w]):
     for y in range (0, network[w-1]):
       for z in range (0, synapseNumber):
-        synapseWeight[w-1][x][y][z] = synapseWeight[w-1][x][y][z]/(meanSynapseWeight * layerOutput[-1][0])
+        synapseWeight[w-1][x][y][z] /= (meanSynapseWeight * layerOutput[-1][0])
 # reducing the synapse weights based on the average and network output
 # reduces the number of outputs from each neuron
 print("Network Outputs: " + str(networkOutput))
@@ -149,12 +176,12 @@ while iteration <= maxIteration:
           for z in range (0, len(neuronInput[x])):
             for y in range (0, synapseNumber):
               adjustedTime = -neuronInput[x][z] - synapseDelay[y] + time
-              if adjustedTime > 0:
-                internalState = internalState + synapseWeight[a][b][x][y] * (adjustedTime/timeDecay) * math.exp(1 - (adjustedTime/timeDecay))
+              internalState += synapseWeight[a][b][x][y] * alpha(adjustedTime)
     # summing alpha function values for all received inputs to a neuron
-    # an input is recieved from the previous layer when the sum of the input time and the delay is equal to the time
+    # an input is recieved from the previous layer when the sum of the input
+    # time and the delay is equal to the time
         if len(output) > 0:
-            internalState = internalState - 2 * neuronThreshold * math.exp(-1*(time - output[-1])/refractorinessDecay)
+            internalState += refractoriness(time - output[-1])
     # adding the refractoriness term for the most recent output
         if internalState > neuronThreshold:
           output.append(time)
