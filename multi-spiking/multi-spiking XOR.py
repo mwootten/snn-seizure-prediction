@@ -1,9 +1,9 @@
 import math
-from random import randint, seed
+import random
 from copy import deepcopy
 import json
 
-seed(int(input("Random seed? ")))
+random.seed(int(input("Random seed? ")))
 
 constantInput = []
 useConstantInput = (input("Train on same input (yes/no)? ") == "yes")
@@ -96,7 +96,7 @@ for w in range (1, len(network)):
   for x in range (0, network[w]):
     for y in range (0, network[w-1]):
       for z in range (0, synapseNumber):
-        synapseWeight[w-1][x][y][z] = randint(1,10)
+        synapseWeight[w-1][x][y][z] = random.uniform(1.0,10.0)
         sumSynapseWeight = sumSynapseWeight + synapseWeight[w-1][x][y][z]
         weightNumber = weightNumber + 1
 meanSynapseWeight = sumSynapseWeight / weightNumber
@@ -127,10 +127,10 @@ while iteration <= maxIteration:
     epochInputDataLength = len(epochInputData)
     if epochInputDataLength == 0:
         epochInputData = deepcopy(inputData)
-        neuronInput = epochInputData.pop(randint(0,len(epochInputData)-1))
+        neuronInput = epochInputData.pop(random.randint(0,len(epochInputData)-1))
     if epochInputDataLength > 0:
-        neuronInput = epochInputData.pop(randint(0,len(epochInputData)-1))  
-  expectedOutput = [abs(neuronInput[0][0]-neuronInput[1][0]) + 10]                                      
+        neuronInput = epochInputData.pop(random.randint(0,len(epochInputData)-1))
+  expectedOutput = [abs(neuronInput[0][0]-neuronInput[1][0]) + 10]
   layerOutput = []
   networkOutput = [deepcopy(neuronInput)]
   networkInternalState =[]
