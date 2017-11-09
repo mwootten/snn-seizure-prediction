@@ -5,7 +5,7 @@ import json
 
 neuronThreshold = 1
 
-if input("Use defaults? ") == "yes":
+if True:  #  input("Use defaults? ") == "yes":
     random.seed(1)
     useConstantInput = False
     synapseNumber = 4
@@ -143,9 +143,9 @@ for w in range (1, len(network)):
         synapseWeight[w-1][x][y][z] /= (meanSynapseWeight * layerOutput[-1][0])
 # reducing the synapse weights based on the average and network output
 # reduces the number of outputs from each neuron
-print("Network Outputs: " + str(networkOutput))
-learningRate = float(input("Learning Rate?"))
-maxEpoch = int(input("Max Epochs?"))
+# print("Network Outputs: " + str(networkOutput))
+learningRate = 0.005  # float(input("Learning Rate?"))
+maxEpoch = 500  # int(input("Max Epochs?"))
 if useConstantInput:
     maxIteration = maxEpoch
 iteration = 1
@@ -172,6 +172,9 @@ while iteration <= maxIteration:
     (networkOutput[-1][x][0] - expectedOutput[x])**2
     for x in range(len(expectedOutput))
   ])
+
+  print([error, networkOutput])
+
   errorTime.append(error)
   if (iteration)%len(inputData) == 0:
     squaredErrorSum = 0
@@ -232,7 +235,7 @@ while iteration <= maxIteration:
             for b in range (0, len(networkOutput[w][x])):
               for c in range (0, synapseNumber):
                 adjustedTimeInput = networkOutput[-1][a][0] - networkOutput[w][x][b] - synapseDelay[c]
-                alphaFunctionInput = previousSynapseWeight[w-1][x][y][c] * (adjustedTimeInput)* math.exp(1-adjustedTimeInput/timeDecay)
+                alphaFunctionInput = previousSynapseWeight[w-1][x][y][c] * alpha(adjustedTimeInput)
                 if adjustedTimeInput > 0:
                   internalStateInputSum = internalStateInputSum + alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay)
             internalStateInput = -1*internalStateInputSum
@@ -263,9 +266,9 @@ while iteration <= maxIteration:
                   for d in range (0, len(networkOutput[w-1][c])):
                     for e in range (0, synapseNumber):
                       adjustedTimeInput = networkOutput[w][x][b] - networkOutput[w-1][c][d] - synapseDelay[e]
-                      alphaFunctionInput = previousSynapseWeight[w-1][x][c][e] * (adjustedTimeInput/timeDecay)* math.exp(1- (adjustedTimeInput/timeDecay))
+                      alphaFunctionInput = previousSynapseWeight[w-1][x][c][e] * alpha(adjustedTimeInput)
                       adjustedTimeRefractoriness = networkOutput[w][x][b] - networkOutput[w][x][b-1]
-                      refractorinessInput = -2*neuronThreshold* math.exp(-adjustedTimeRefractoriness/refractorinessDecay)
+                      refractorinessInput = refractoriness(adjustedTimeRefractoriness)
                       if adjustedTimeRefractoriness <= 0:
                         refractorinessInput = 0
                       if adjustedTimeInput > 0:
@@ -280,15 +283,27 @@ while iteration <= maxIteration:
                 internalStateWeight = 0
                 for c in range (0, len(networkOutput[w-1][y])):
                   adjustedTimeInput = networkOutput[w][x][b] - networkOutput[w-1][y][c] - synapseDelay[z]
-                  if adjustedTimeInput > 0:
-                    internalStateWeight = internalStateWeight + (adjustedTimeInput/timeDecay)* math.exp(1- (adjustedTimeInput/timeDecay))
+                  internalStateWeight += alpha(adjustedTimeInput)
                 adjustedTimeRefractoriness = networkOutput[w][x][b] - networkOutput[w][x][b-1]
-                refractorinessInput = -2*neuronThreshold* math.exp(-adjustedTimeRefractoriness/refractorinessDecay)
-                if adjustedTimeRefractoriness < 0:
-                  refractorinessInput = 0
+                refractorinessInput = refractoriness(adjustedTimeRefractoriness)
                 internalStateInput = (2*neuronThreshold/refractorinessDecay)*refractorinessInput
                 inputWeight = inputInternalState*(internalStateWeight+internalStateInput*inputWeight)
             errorGradient = errorGradient + errorInput*inputWeight
           synapseWeight[w-1][x][y][z] = previousSynapseWeight[w-1][x][y][z] - learningRate*errorGradient
   iteration = iteration + 1
+
+"""
 print(epochErrorTime)
+
+print("")
+print("")
+
+print("Network output:")
+print(networkOutput)
+
+import matplotlib.pyplot as plt
+xs = range(len(errorTime))
+ys = errorTime
+plt.plot(xs, ys)
+plt.show()
+"""
