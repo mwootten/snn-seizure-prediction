@@ -18,9 +18,9 @@ class Neuron:
     """Represent a single neuron, and encapsulate its internal state"""
     def __init__(self, spikeTimes=[], internalState=0):
         # The deepcopy is not redundant.
-        # The default parameter value is initialized exactly once
-        # Therefore, every default (every hidden/output neuron) will have the
-        # same spike times, causing great confusion
+        # The default parameter value is initialized exactly once.
+        # If the deepcopy was removed, every default (every hidden/output
+        # neuron) will have identical spike times, causing great confusion.
         self.spikeTimes = deepcopy(spikeTimes)
         self.internalState = internalState
 

@@ -24,8 +24,8 @@ else:
     network = []
     network.append(3)
     hiddenLayer = int(input("Number of Hidden Layers?"))
-    for x in range (1, hiddenLayer + 1):
-      network.append(int(input("Number of Neurons in Hidden Layer " + str(x) + "?")))
+    for x in range(1, hiddenLayer + 1):
+        network.append(int(input("Number of Neurons in Hidden Layer " + str(x) + "?")))
     network.append(1)
     # describing network structure as neurons per layer
     simulationTime = float(input("Simulation Time?"))
@@ -34,24 +34,24 @@ else:
     latestOutputSpike = int(input("Latest Output Spike?"))
 
 synapseWeight = []
-for w in range (1, len(network)):
-  outputNeuronWeight = []
-  for x in range (0, network[w]):  # w: 1--len
-    inputNeuronWeight = []
-    for y in range (0, network[w - 1]):  # w-1: 0--len-1
-      synapsesPerConnection = []
-      for z in range (0, synapseNumber):
-        synapsesPerConnection.append(1)
-      inputNeuronWeight.append(synapsesPerConnection)
-    outputNeuronWeight.append(inputNeuronWeight)
-  synapseWeight.append(outputNeuronWeight)
+for w in range(1, len(network)):
+    outputNeuronWeight = []
+    for x in range(0, network[w]):  # w: 1--len
+        inputNeuronWeight = []
+        for y in range(0, network[w - 1]):  # w-1: 0--len-1
+            synapsesPerConnection = []
+            for z in range(0, synapseNumber):
+                synapsesPerConnection.append(1)
+            inputNeuronWeight.append(synapsesPerConnection)
+        outputNeuronWeight.append(inputNeuronWeight)
+    synapseWeight.append(outputNeuronWeight)
 # Organization of synapse weights:
 # > layer
 #   > number of neuron in layer
 #     > number of layer inputted from
 #       > synapse number
 neuronInput = []
-for x in range (0, network[0]):
+for x in range(0, network[0]):
     neuronInput.append([0])
 synapseDelayDelta = int(latestOutputSpike / synapseNumber)
 synapseDelay = [1 + (n * synapseDelayDelta) for n in range(synapseNumber)]
@@ -158,17 +158,16 @@ while iteration <= maxIteration:
   if useConstantInput:
     neuronInput = deepcopy(constantInput)
   else:
-    epochInputDataLength = len(epochInputData)
-    if epochInputDataLength == 0:
+    if len(epochInputData) == 0:
         epochInputData = deepcopy(inputData)
-        neuronInput = epochInputData.pop(random.randint(0,len(epochInputData)-1))
-    if epochInputDataLength > 0:
-        neuronInput = epochInputData.pop(random.randint(0,len(epochInputData)-1))
+    neuronInput = epochInputData.pop(random.randint(0, len(epochInputData)-1))
   expectedOutput = [abs(neuronInput[0][0]-neuronInput[1][0]) + 10]
   layerOutput = []
   networkOutput = [deepcopy(neuronInput)]
   networkInternalState =[]
+
   runNetwork(neuronInput)
+
   error = 0.5*sum([
     (networkOutput[-1][x][0] - expectedOutput[x])**2
     for x in range(len(expectedOutput))
@@ -181,6 +180,9 @@ while iteration <= maxIteration:
     meanSquaredError = squaredErrorSum/len(inputData)
     epochErrorTime.append(meanSquaredError)
   previousSynapseWeight = deepcopy(synapseWeight)
+
+  # Backpropagate through the final level of synapses: from output to the last
+  # hidden layer
   for x in range (0, network[-1]):
     for y in range (0, network[-2]):
       for z in range (0, synapseNumber):
@@ -204,6 +206,8 @@ while iteration <= maxIteration:
         outputInternalState = -1 / (denominatorOutputInternalState)
         errorGradient = errorOutput * outputInternalState * internalStateWeight
         synapseWeight[-1][x][y][z] = previousSynapseWeight[-1][x][y][z] - learningRate*errorGradient
+
+  # Backpropagate through all the remaining layers
   for w in range (1, len(network)-1):
     for x in range (0, network[w]):
       for y in range (0, network[w-1]):
