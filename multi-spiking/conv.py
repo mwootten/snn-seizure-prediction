@@ -44,7 +44,7 @@ class Net(nn.Module):
 #   Code version: 1.0 
 #   Availability: http://pytorch.org/tutorials/beginner/pytorch_with_examples.html#nn-module
 model = Net()
-N, D_in, D_out = 64, 3756, 1
+N, D_in, D_out = 192, 3756, 1
 # batch size. input dimensions, output dimensions
 x = []
 y = []
@@ -70,14 +70,67 @@ y = Variable(torch.from_numpy(y).float(), requires_grad=False)
 # y = Variable(torch.randn(N, D_out), requires_grad=False)
 x = x.unsqueeze(-1)
 x = x.unsqueeze(-1)
+# test data
+xtest = []
+ytest = []
+for a in range (0, int(N/4)):
+  xbatch = []
+  ybatch = []
+  if (a < N/8):
+    ybatch.append(1)
+  else:
+    ybatch.append(0)
+  for b in range (0, D_in):
+    if (a < N/8):
+      xbatch.append(math.sin(a+b))
+    else:
+      xbatch.append(random.uniform(-1.0,1.0))
+  xtest.append(xbatch)
+  ytest.append(ybatch)
+xtest = np.array(xtest)
+ytest = np.array(ytest)
+xtest = Variable(torch.from_numpy(xtest).float(), requires_grad=False)
+# x = Variable(torch.randn(N, D_in))
+ytest = Variable(torch.from_numpy(ytest).float(), requires_grad=False)
+# y = Variable(torch.randn(N, D_out), requires_grad=False)
+xtest = xtest.unsqueeze(-1)
+xtest = xtest.unsqueeze(-1)
 # adding fake dimensions to x for compatibility with convolutions
 criterion = torch.nn.MSELoss(size_average=False)
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
-for t in range(500):
+errorTime = []
+testErrorTime = []
+t = 0
+while t < 500:
     y_pred = model(x)
     loss = criterion(y_pred, y)
     print(t, loss.data[0])
+    errorTime.append(loss.data[0])
     # Zero gradients, perform a backward pass, and update the weights.
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
+    test_pred = model(xtest)
+    testLoss = criterion(test_pred, ytest)
+    testErrorTime.append(testLoss.data[0])
+    t += 1
+    ## if t > 2:
+    ##    if abs(errorTime[-1] - testErrorTime[-1]) > abs(errorTime[-2] - testErrorTime[-2]):
+    ##        t += 500
+import matplotlib.pyplot as plt
+xs = range(len(errorTime))
+ys = errorTime
+plt.plot(xs, ys)
+plt.show()
+xs = range(len(testErrorTime))
+ys = testErrorTime
+plt.plot(xs,ys)
+plt.show()
+xs = range(len(errorTime))
+ys = errorTime
+plt.plot(xs, ys)
+xstest = range(len(testErrorTime))
+ystest = testErrorTime
+plt.plot(xstest,ystest)
+plt.show()
+    
