@@ -26,19 +26,19 @@ def usecsToBytes(usecs):
 
 f = open(channelFile, 'rb')
 
-for (num, seizureStartUsecs) in enumerate(seizureStartsUsecs):
-    sampleStartUsecs = seizureStartUsecs - sampleStartOffset
 
+def writeSlice(channelHandle, outputName, sampleStart, sampleDuration):
     sampleStartBytes = usecsToBytes(sampleStartUsecs)
     sampleDurationBytes = usecsToBytes(sampleDuration)
+    channelHandle.seek(usecsToBytes(sampleStart))
+    sample = channelHandle.read(sampleDurationBytes)
+    with open(outputName, 'wb') as g:
+        g.write(sample)
 
-    print([sampleStartBytes, sampleDurationBytes])
 
-    f.seek(sampleStartBytes)
-    sample = f.read(sampleDurationBytes)
+for (num, seizureStartUsecs) in enumerate(seizureStartsUsecs):
+    sampleStartUsecs = seizureStartUsecs - sampleStartOffset
     outputName = channelFile.split('.')[0] + "-positive-" + str(num) + ".raw32"
-    g = open(outputName, 'wb')
-    g.write(sample)
-    g.close()
+    writeSlice(f, outputName, sampleStartUsecs, sampleDuration)
 
 f.close()
