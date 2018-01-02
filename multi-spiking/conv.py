@@ -4,6 +4,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import random
+import math
+import matplotlib.pyplot as plt
 
 #   Title: Neural Networks Tutorial
 #   Author: Chintala, S
@@ -15,12 +17,12 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         # 3756 input neurons, 1x1 square convolution
-        # 3 Temporal Convolutions 3756 -> 1252 -> 417 -> 139
-        self.conv1 = nn.Conv2d(3756, 1252, 1)
-        self.conv2 = nn.Conv2d(1252, 417, 1)
-        self.conv3 = nn.Conv2d(417, 139, 1)
+        # 3 Temporal Convolutions 4696 -> 1565 -> 521 -> 173
+        self.conv1 = nn.Conv2d(4696, 1565, 1)
+        self.conv2 = nn.Conv2d(1565, 521, 1)
+        self.conv3 = nn.Conv2d(521, 173, 1)
         # Convolutional to output neuron
-        self.fc1 = nn.Linear(139, 1)
+        self.fc1 = nn.Linear(173, 1)
 
     def forward(self, x):
         # Max pooling over a (1, 1) window
@@ -41,10 +43,10 @@ class Net(nn.Module):
 #   Title: PyTorch with Examples
 #   Author: Johnson, J
 #   Date: 2017
-#   Code version: 1.0 
+#   Code version: 1.0
 #   Availability: http://pytorch.org/tutorials/beginner/pytorch_with_examples.html#nn-module
 model = Net()
-N, D_in, D_out = 192, 3756, 1
+N, D_in, D_out = 192, 4696, 1
 # batch size. input dimensions, output dimensions
 x = []
 y = []
@@ -117,15 +119,7 @@ while t < 500:
     ## if t > 2:
     ##    if abs(errorTime[-1] - testErrorTime[-1]) > abs(errorTime[-2] - testErrorTime[-2]):
     ##        t += 500
-import matplotlib.pyplot as plt
-xs = range(len(errorTime))
-ys = errorTime
-plt.plot(xs, ys)
-plt.show()
-xs = range(len(testErrorTime))
-ys = testErrorTime
-plt.plot(xs,ys)
-plt.show()
+
 xs = range(len(errorTime))
 ys = errorTime
 plt.plot(xs, ys)
@@ -133,4 +127,3 @@ xstest = range(len(testErrorTime))
 ystest = testErrorTime
 plt.plot(xstest,ystest)
 plt.show()
-    
