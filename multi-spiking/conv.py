@@ -54,15 +54,15 @@ ytest = []
 x = []
 y = []
 for filename in sys.argv:
-    if filename.contains("test"):
+    if "test" in filename:
         xtest.append(np.fromfile(filename, dtype = np.dtype("i4")))
-        if filename.contains("positive"):
+        if "positive" in filename:
             ytest.append(1)
         else:
             ytest.append(0)
-    if filename.contains("training"):
+    if "training" in filename:
         x.append(np.fromfile(filename, dtype = np.dtype("i4")))
-        if filename.contains("positive"):
+        if "positive" in filename:
             y.append(1)
         else:
             y.append(0)
