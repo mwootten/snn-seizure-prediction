@@ -61,7 +61,7 @@ def makeSingleSliceMatrix(fileNames):
 def performPCA(fileNames):
     pcaMatrix = makeSingleSliceMatrix(fileNames)
     coeff, score, latent = princomp(pcaMatrix)
-    component1 = np.asarray(coeff[:, 1].round(), dtype=np.int32)
+    component1 = np.asarray((coeff[:, 1] * 1000000).round(), dtype=np.int32)
     outputName = 'PCA-' + '-'.join(fileNames[0].split('-')[1:])
     component1.tofile(outputName)
 
