@@ -6,6 +6,7 @@ import numpy as np
 import random
 import math
 import matplotlib.pyplot as plt
+import sys
 
 #   Title: Neural Networks Tutorial
 #   Author: Chintala, S
@@ -48,55 +49,33 @@ class Net(nn.Module):
 model = Net()
 N, D_in, D_out = 192, 4696, 1
 # batch size. input dimensions, output dimensions
+xtest = []
+ytest = []
 x = []
 y = []
-for a in range (0, N):
-  xbatch = []
-  ybatch = []
-  if (a < N/2):
-    ybatch.append(1)
-  else:
-    ybatch.append(0)
-  for b in range (0, D_in):
-    if (a < N/2):
-      xbatch.append(math.cos(a+b))
-    else:
-      xbatch.append(random.uniform(-1.0,1.0))
-  x.append(xbatch)
-  y.append(ybatch)
+for filename in sys.argv:
+    if filename.contains(test):
+        xtest.append(np.fromfile(filename, dtype = np.dtype("i4")))
+        if filename.contains(positive):
+            ytest.append(1)
+        else:
+            ytest.append(0)
+    if filename.contains(training):
+        x.append(np.fromfile(filename, dtype = np.dtype("i4")))
+        if filename.contains(positive):
+            y.append(1)
+        else:
+            y.append(0)
+xtest = np.array(xtest)
+ytest = np.array(ytest)
 x = np.array(x)
 y = np.array(y)
 x = Variable(torch.from_numpy(x).float())
-# x = Variable(torch.randn(N, D_in))
-y = Variable(torch.from_numpy(y).float(), requires_grad=False)
-# y = Variable(torch.randn(N, D_out), requires_grad=False)
-x = x.unsqueeze(-1)
-x = x.unsqueeze(-1)
-# test data
-xtest = []
-ytest = []
-for a in range (0, int(N/4)):
-  xbatch = []
-  ybatch = []
-  if (a < N/8):
-    ybatch.append(1)
-  else:
-    ybatch.append(0)
-  for b in range (0, D_in):
-    if (a < N/8):
-      xbatch.append(math.sin(a+b))
-    else:
-      xbatch.append(random.uniform(-1.0,1.0))
-  xtest.append(xbatch)
-  ytest.append(ybatch)
-xtest = np.array(xtest)
-ytest = np.array(ytest)
+y = Variable(torch.from_numpy(x).float(), requres_grad=False)
 xtest = Variable(torch.from_numpy(xtest).float(), requires_grad=False)
-# x = Variable(torch.randn(N, D_in))
 ytest = Variable(torch.from_numpy(ytest).float(), requires_grad=False)
-# y = Variable(torch.randn(N, D_out), requires_grad=False)
-xtest = xtest.unsqueeze(-1)
-xtest = xtest.unsqueeze(-1)
+xtest = xtest.unsqueeze(-1).unsqueeze(-1)
+x = x.unsqueeze(-1).unsqueeze(-1)
 # adding fake dimensions to x for compatibility with convolutions
 criterion = torch.nn.MSELoss(size_average=False)
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
