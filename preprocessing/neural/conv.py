@@ -18,12 +18,12 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         # 3756 input neurons, 1x1 square convolution
-        # 3 Temporal Convolutions 4696 -> 1565 -> 521 -> 173
-        self.conv1 = nn.Conv2d(4696, 1565, 1)
-        self.conv2 = nn.Conv2d(1565, 521, 1)
-        self.conv3 = nn.Conv2d(521, 173, 1)
+        # 3 Temporal Convolutions 4256 -> 1418 -> 472 -> 157
+        self.conv1 = nn.Conv2d(4256, 1418, 1)
+        self.conv2 = nn.Conv2d(1418, 472, 1)
+        self.conv3 = nn.Conv2d(472, 157, 1)
         # Convolutional to output neuron
-        self.fc1 = nn.Linear(173, 1)
+        self.fc1 = nn.Linear(157, 1)
 
     def forward(self, x):
         # Max pooling over a (1, 1) window
@@ -47,7 +47,7 @@ class Net(nn.Module):
 #   Code version: 1.0
 #   Availability: http://pytorch.org/tutorials/beginner/pytorch_with_examples.html#nn-module
 model = Net()
-N, D_in, D_out = 192, 4696, 1
+N, D_in, D_out = 240, 4256, 1
 # batch size. input dimensions, output dimensions
 xtest = []
 ytest = []
@@ -55,13 +55,13 @@ x = []
 y = []
 for filename in sys.argv:
     if "test" in filename:
-        xtest.append(np.fromfile(filename, dtype = np.dtype("i4")))
+        xtest.append(np.fromfile(filename, dtype = np.dtype("i4")) / 10000)
         if "positive" in filename:
             ytest.append(1)
         else:
             ytest.append(0)
     if "training" in filename:
-        x.append(np.fromfile(filename, dtype = np.dtype("i4")))
+        x.append(np.fromfile(filename, dtype = np.dtype("i4")) / 10000)
         if "positive" in filename:
             y.append(1)
         else:
@@ -71,7 +71,7 @@ ytest = np.array(ytest)
 x = np.array(x)
 y = np.array(y)
 x = Variable(torch.from_numpy(x).float())
-y = Variable(torch.from_numpy(x).float(), requres_grad=False)
+y = Variable(torch.from_numpy(y).float(), requires_grad=False)
 xtest = Variable(torch.from_numpy(xtest).float(), requires_grad=False)
 ytest = Variable(torch.from_numpy(ytest).float(), requires_grad=False)
 xtest = xtest.unsqueeze(-1).unsqueeze(-1)
@@ -98,6 +98,11 @@ while t < 500:
     ## if t > 2:
     ##    if abs(errorTime[-1] - testErrorTime[-1]) > abs(errorTime[-2] - testErrorTime[-2]):
     ##        t += 500
+
+print(model(xtest))
+print("")
+print("")
+print(ytest)
 
 xs = range(len(errorTime))
 ys = errorTime
