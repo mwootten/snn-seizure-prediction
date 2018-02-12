@@ -109,7 +109,7 @@ def refractoriness(time):
     return -2 * neuronThreshold * torch.exp(-1*time/refractorinessDecay) * ((time + 0.0000001)/torch.abs(time + 0.0000001) + 1)/2
 
 def runNetwork(neuronInput):
-    for x in range(0, simulationTime):
+    for x in range(1, simulationTime + 1):
         internalState = Variable(torch.zeros(sum(network)).unsqueeze(-1),requires_grad = False)
         refractorinessValue = Variable(torch.zeros(sum(network)),requires_grad = False)
         for y in range(0, synapseNumber):
@@ -119,7 +119,7 @@ def runNetwork(neuronInput):
             refractorinessValue = refractorinessValue + refractoriness((x - outputMatrices[y]*y))*outputMatrices[y] - refractorinessValue*outputMatrices[y]
         internalState = internalState + refractorinessValue.unsqueeze(-1)       
         output = ((internalState - 1)/(torch.abs(internalState - 1)) + 1)/2
-        outputMatrix = inputMatrices[x + 1] + output.squeeze(1)
+        outputMatrix = inputMatrices[x] + output.squeeze(1)
         outputMatrices.append(outputMatrix)
 
 outputMatrices = [inputMatrices[0]]
