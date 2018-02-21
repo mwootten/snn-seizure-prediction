@@ -2,7 +2,9 @@ import math
 import random
 from copy import deepcopy
 import json
+import time
 
+start = time.time()
 neuronThreshold = 1
 
 if True:  #  input("Use defaults? ") == "yes":
@@ -85,29 +87,32 @@ def runNetwork(neuronInput):
             output = []
             neuronInternalState = []
             while time <= simulationTime:
+                activationFunction = (time > min(min(neuronInput)))
                 internalState = 0
-                for x in range(0, network[a]):
-                    for y in range(0, synapseNumber):
-                        for z in range(0, len(neuronInput[x])):
-                            adjustedTime = -neuronInput[x][z] - synapseDelay[y] + time
-                            internalState += synapseWeight[a][b][x][y] * alpha(adjustedTime)
+                if len(output) > 0:
+                    activationFunction = ((time - output[-1]) > 2)
+                    # heuristic rule: prevent spikes that are <= 2 ms apart
+                if a == (len(network) - 2):
+                    activationFunction *= (1 - len(output))
+                if activationFunction == 1:
+                    for x in range(0, network[a]):
+                        for y in range(0, synapseNumber):
+                            for z in range(0, len(neuronInput[x])):
+                                adjustedTime = -neuronInput[x][z] - synapseDelay[y] + time
+                                internalState += synapseWeight[a][b][x][y] * alpha(adjustedTime)
             # summing alpha function values for all received inputs to a neuron
             # an input is recieved from the previous layer when the sum of the
             # input time and the delay is equal to the time
-                if len(output) > 0:
-                    internalState += refractoriness(time - output[-1])
+                    if (len(output) > 0)*(internalState > 1):
+                        internalState += refractoriness(time - output[-1])
                 # adding the refractoriness term for the most recent output
-                if internalState > neuronThreshold:
-                    output.append(time)
-                # heuristic rule: prevent spikes that are <= 2 ms apart
-                if len(output) > 1:
-                    if time - output[-2] <= 2:
-                        output.pop()
+                    if internalState > neuronThreshold:
+                        output.append(time)
                 # storing output time if the neuron outputs
                 neuronInternalState.append(internalState)
                 if time == simulationTime:
-                    sortedInternalState = sorted(deepcopy(neuronInternalState))
                     if len(output) == 0:
+                        sortedInternalState = sorted(deepcopy(neuronInternalState))
                         output.append(neuronInternalState.index(
                             sortedInternalState[-1]))
                         # heuristic rule
@@ -291,6 +296,8 @@ while iteration <= maxIteration:
             errorGradient = errorGradient + errorInput*inputWeight
           synapseWeight[w-1][x][y][z] = previousSynapseWeight[w-1][x][y][z] - learningRate*errorGradient
   iteration = iteration + 1
+end = time.time()
+print("Time = " + str(end - start))
 
 """
 print(epochErrorTime)
