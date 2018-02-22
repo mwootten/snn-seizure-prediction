@@ -19,9 +19,9 @@ class Net(nn.Module):
         super(Net, self).__init__()
         # 3756 input neurons, 1x1 square convolution
         # 3 Temporal Convolutions 4256 -> 1418 -> 472 -> 157
-        self.conv1 = nn.Conv2d(4256, 1418, 1)
-        self.conv2 = nn.Conv2d(1418, 472, 1)
-        self.conv3 = nn.Conv2d(472, 157, 1)
+        self.conv1 = nn.Conv1d(4256, 1418, 1)
+        self.conv2 = nn.Conv1d(1418, 472, 1)
+        self.conv3 = nn.Conv1d(472, 157, 1)
         # Convolutional to output neuron
         self.fc1 = nn.Linear(157, 1)
 
@@ -74,15 +74,15 @@ x = Variable(torch.from_numpy(x).float())
 y = Variable(torch.from_numpy(y).float(), requires_grad=False)
 xtest = Variable(torch.from_numpy(xtest).float(), requires_grad=False)
 ytest = Variable(torch.from_numpy(ytest).float(), requires_grad=False)
-xtest = xtest.unsqueeze(-1).unsqueeze(-1)
-x = x.unsqueeze(-1).unsqueeze(-1)
+xtest = xtest.unsqueeze(-1)
+x = x.unsqueeze(-1)
 # adding fake dimensions to x for compatibility with convolutions
 criterion = torch.nn.MSELoss(size_average=False)
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
 errorTime = []
 testErrorTime = []
 t = 0
-while t < 500:
+while t < 2:
     y_pred = model(x)
     loss = criterion(y_pred, y)
     print(t, loss.data[0])
