@@ -204,11 +204,9 @@ while iteration <= maxIteration:
           for b in range (0, len(networkOutput[-2][a])):
             for c in range (0, synapseNumber):
               adjustedTimeOutput = networkOutput[-1][x][0] - networkOutput[-2][a][b] - synapseDelay[c]
-              alphaFunctionOutput = previousSynapseWeight[-1][x][a][c] * alpha(adjustedTimeOutput)
               if adjustedTimeOutput > 0:
+                alphaFunctionOutput = previousSynapseWeight[-1][x][a][c] * alpha(adjustedTimeOutput)
                 denominatorOutputInternalState += alphaFunctionOutput*(1/adjustedTimeOutput - 1/timeDecay)
-              if adjustedTimeOutput == 0:
-                denominatorOutputInternalState += (previousSynapseWeight[-1][x][a][c]/timeDecay) * math.exp(1)
         if denominatorOutputInternalState < 0.1:
           denominatorOutputInternalState = 0.1
         outputInternalState = -1 / (denominatorOutputInternalState)
@@ -228,11 +226,9 @@ while iteration <= maxIteration:
               for c in range (0, len(networkOutput[-2][b])):
                 for d in range (0, synapseNumber):
                   adjustedTimeOutput = networkOutput[-1][a][0] - networkOutput[-2][b][c] - synapseDelay[d]
-                  alphaFunctionOutput = previousSynapseWeight[-1][a][b][d] * alpha(adjustedTimeOutput)
                   if adjustedTimeOutput > 0:
+                    alphaFunctionOutput = previousSynapseWeight[-1][a][b][d] * alpha(adjustedTimeOutput)
                     denominatorOutputInternalState += alphaFunctionOutput*(1/adjustedTimeOutput - 1/timeDecay)
-                  if adjustedTimeOutput == 0:
-                    denominatorOutputInternalState += (previousSynapseWeight[-1][a][b][d]/timeDecay)*math.exp(1)
             if denominatorOutputInternalState < 0.1:
               denominatorOutputInternalState = 0.1
             outputInternalState = -1 / (denominatorOutputInternalState)
@@ -271,17 +267,13 @@ while iteration <= maxIteration:
                   for d in range (0, len(networkOutput[w-1][c])):
                     for e in range (0, synapseNumber):
                       adjustedTimeInput = networkOutput[w][x][b] - networkOutput[w-1][c][d] - synapseDelay[e]
-                      alphaFunctionInput = previousSynapseWeight[w-1][x][c][e] * alpha(adjustedTimeInput)
                       adjustedTimeRefractoriness = networkOutput[w][x][b] - networkOutput[w][x][b-1]
                       refractorinessInput = refractoriness(adjustedTimeRefractoriness)
-                      if adjustedTimeRefractoriness <= 0:
-                        refractorinessInput = 0
                       if adjustedTimeInput > 0:
+                        alphaFunctionInput = previousSynapseWeight[w-1][x][c][e] * alpha(adjustedTimeInput)
                         inputInternalStateDenominator += alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay) + (2*neuronThreshold/refractorinessDecay)*refractorinessInput
-                      if adjustedTimeInput < 0:
+                      else:
                         inputInternalStateDenominator += (2*neuronThreshold/refractorinessDecay)*refractorinessInput
-                      if adjustedTimeInput == 0:
-                        inputInternalStateDenominator += (previousSynapseWeight[w-1][x][c][e]/timeDecay)*math.exp(1) + (2*neuronThreshold/refractorinessDecay)*refractorinessInput
                 if inputInternalStateDenominator < 0.1:
                     inputInternalStateDenominator = 0.1
                 inputInternalState = -1/inputInternalStateDenominator
@@ -298,10 +290,6 @@ while iteration <= maxIteration:
   iteration = iteration + 1
 end = time.time()
 print("Time = " + str(end - start))
-
-"""
-print(epochErrorTime)
-
 print("")
 print("")
 
@@ -309,8 +297,8 @@ print("Network output:")
 print(networkOutput)
 
 import matplotlib.pyplot as plt
-xs = range(len(errorTime))
-ys = errorTime
+xs = range(len(epochErrorTime))
+ys = epochErrorTime
 plt.plot(xs, ys)
 plt.show()
-"""
+
