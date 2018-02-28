@@ -112,9 +112,7 @@ def runNetwork(neuronInput):
                 neuronInternalState.append(internalState)
                 if time == simulationTime:
                     if len(output) == 0:
-                        sortedInternalState = sorted(deepcopy(neuronInternalState))
-                        output.append(neuronInternalState.index(
-                            sortedInternalState[-1]))
+                        output.append(neuronInternalState.index(max(neuronInternalState)))
                         # heuristic rule
                     layerOutput.append(output)
                 time = time + 1
