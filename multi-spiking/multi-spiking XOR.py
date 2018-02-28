@@ -177,8 +177,6 @@ while iteration <= maxIteration:
     (networkOutput[-1][x][0] - expectedOutput[x])**2
     for x in range(len(expectedOutput))
   ])
-    
-  print([error, networkOutput])
 
   errorTime.append(error)
   if (iteration)%len(inputData) == 0:
