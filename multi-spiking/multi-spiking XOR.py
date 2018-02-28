@@ -177,7 +177,7 @@ while iteration <= maxIteration:
     (networkOutput[-1][x][0] - expectedOutput[x])**2
     for x in range(len(expectedOutput))
   ])
-
+    
   print([error, networkOutput])
 
   errorTime.append(error)
@@ -233,13 +233,14 @@ while iteration <= maxIteration:
               denominatorOutputInternalState = 0.1
             outputInternalState = -1 / (denominatorOutputInternalState)
             internalStateInputSum = 0
-            for b in range (0, len(networkOutput[w][x])):
-              for c in range (0, synapseNumber):
-                adjustedTimeInput = networkOutput[-1][a][0] - networkOutput[w][x][b] - synapseDelay[c]
-                alphaFunctionInput = previousSynapseWeight[w-1][x][y][c] * alpha(adjustedTimeInput)
-                if adjustedTimeInput > 0:
-                  internalStateInputSum = internalStateInputSum + alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay)
-            internalStateInput = -1*internalStateInputSum
+            if errorOutput != 0:
+                for b in range (0, len(networkOutput[w][x])):
+                    for c in range (0, synapseNumber):
+                        adjustedTimeInput = networkOutput[-1][a][0] - networkOutput[w][x][b] - synapseDelay[c]
+                        alphaFunctionInput = previousSynapseWeight[w-1][x][y][c] * alpha(adjustedTimeInput)
+                        if adjustedTimeInput > 0:
+                            internalStateInputSum = internalStateInputSum + alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay)
+                internalStateInput = -1*internalStateInputSum
             errorInput = errorOutput*outputInternalState*internalStateInput
             inputWeight = 0
             for b in range (0, len(networkOutput[w][x])):
