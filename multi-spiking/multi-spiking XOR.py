@@ -9,7 +9,6 @@ neuronThreshold = 1
 
 if True:  #  input("Use defaults? ") == "yes":
     random.seed(1)
-    useConstantInput = False
     synapseNumber = 4
     network = [3, 5, 1]
     simulationTime = 25
@@ -18,10 +17,6 @@ if True:  #  input("Use defaults? ") == "yes":
     latestOutputSpike = 16
 else:
     random.seed(int(input("Random seed? ")))
-    useConstantInput = (input("Train on same input (yes/no)? ") == "yes")
-    if useConstantInput:
-        [x_in, y_in] = json.loads(input("Which input (format [a, b])? "))
-        constantInput = [[x_in], [y_in], [0]]
     synapseNumber = int(input("Number of Synapses?"))
     network = []
     network.append(3)
@@ -149,8 +144,6 @@ for w in range (1, len(network)):
 # print("Network Outputs: " + str(networkOutput))
 learningRate = 0.005  # float(input("Learning Rate?"))
 maxEpoch = 500  # int(input("Max Epochs?"))
-if useConstantInput:
-    maxIteration = maxEpoch
 iteration = 1
 errorTime = []
 inputData = [[[0],[0],[0]],[[0],[6],[0]],[[6],[0],[0]],[[6],[6],[0]]]
@@ -158,12 +151,9 @@ maxIteration = maxEpoch*len(inputData)
 epochInputData = deepcopy(inputData)
 epochErrorTime = []
 while iteration <= maxIteration:
-  if useConstantInput:
-    neuronInput = deepcopy(constantInput)
-  else:
-    if len(epochInputData) == 0:
-        epochInputData = deepcopy(inputData)
-    neuronInput = epochInputData.pop(random.randint(0, len(epochInputData)-1))
+  if len(epochInputData) == 0:
+    epochInputData = deepcopy(inputData)
+  neuronInput = epochInputData.pop(random.randint(0, len(epochInputData)-1))
   expectedOutput = [abs(neuronInput[0][0]-neuronInput[1][0]) + 10]
   layerOutput = []
   networkOutput = [deepcopy(neuronInput)]
@@ -298,4 +288,3 @@ xs = range(len(epochErrorTime))
 ys = epochErrorTime
 plt.plot(xs, ys)
 plt.show()
-
