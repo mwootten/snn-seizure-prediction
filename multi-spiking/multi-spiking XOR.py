@@ -7,28 +7,13 @@ import time
 start = time.time()
 neuronThreshold = 1
 
-if True:  #  input("Use defaults? ") == "yes":
-    random.seed(1)
-    synapseNumber = 4
-    network = [3, 5, 1]
-    simulationTime = 25
-    encodingInterval = 6
-    refractorinessDecay = 80
-    latestOutputSpike = 16
-else:
-    random.seed(int(input("Random seed? ")))
-    synapseNumber = int(input("Number of Synapses?"))
-    network = []
-    network.append(3)
-    hiddenLayer = int(input("Number of Hidden Layers?"))
-    for x in range(1, hiddenLayer + 1):
-        network.append(int(input("Number of Neurons in Hidden Layer " + str(x) + "?")))
-    network.append(1)
-    # describing network structure as neurons per layer
-    simulationTime = float(input("Simulation Time?"))
-    encodingInterval = float(input("Encoding Interval?"))
-    refractorinessDecay = float(input("Refractoriness Decay?"))
-    latestOutputSpike = int(input("Latest Output Spike?"))
+random.seed(1)
+synapseNumber = 4
+network = [3, 5, 1]
+simulationTime = 25
+encodingInterval = 6
+refractorinessDecay = 80
+latestOutputSpike = 16
 
 synapseWeight = []
 for w in range(1, len(network)):
