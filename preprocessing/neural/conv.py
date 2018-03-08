@@ -19,11 +19,11 @@ class Net(nn.Module):
         super(Net, self).__init__()
         # 3756 input neurons, 1x1 square convolution
         # 3 Temporal Convolutions 4256 -> 1418 -> 472 -> 157
-        self.conv1 = nn.Conv1d(4256, 1418, 1)
-        self.conv2 = nn.Conv1d(1418, 472, 1)
-        self.conv3 = nn.Conv1d(472, 157, 1)
+        self.conv1 = nn.Conv1d(135, 45, 1)
+        self.conv2 = nn.Conv1d(45, 15, 1)
+        self.conv3 = nn.Conv1d(15, 5, 1)
         # Convolutional to output neuron
-        self.fc1 = nn.Linear(157, 1)
+        self.fc1 = nn.Linear(5, 1)
 
     def forward(self, x):
         # Max pooling over a (1, 1) window
