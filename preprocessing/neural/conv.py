@@ -19,7 +19,7 @@ class Net(nn.Module):
         super(Net, self).__init__()
         # 3756 input neurons, 1x1 square convolution
         # 3 Temporal Convolutions 4256 -> 1418 -> 472 -> 157
-        self.conv1 = nn.Conv1d(135, 45, 1)
+        self.conv1 = nn.Conv1d(187, 45, 1)
         self.conv2 = nn.Conv1d(45, 15, 1)
         self.conv3 = nn.Conv1d(15, 5, 1)
         # Convolutional to output neuron
