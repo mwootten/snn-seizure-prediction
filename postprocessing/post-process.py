@@ -1,8 +1,18 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from optparse import OptionParser
+import sys
 
-predicted = list(map(float, open('predicted', 'r').readlines()))
-true = list(map(float, open('true', 'r').readlines()))
+parser = OptionParser()
+parser.add_option("-p", "--predicted", dest="predicted", default="predicted",
+                  help="Specify the file containing the predictions")
+parser.add_option("-t", "--true", dest="true", default="true",
+                  help="Specify the values containing the correct values")
+
+(options, args) = parser.parse_args()
+
+predicted = list(map(float, open(options.predicted, 'r').readlines()))
+true = list(map(float, open(options.true, 'r').readlines()))
 
 def classify(value, threshold):
     if value > threshold:
