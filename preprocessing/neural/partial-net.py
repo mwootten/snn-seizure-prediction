@@ -47,7 +47,7 @@ class Net(nn.Module):
 #   Code version: 1.0
 #   Availability: http://pytorch.org/tutorials/beginner/pytorch_with_examples.html#nn-module
 model = Net()
-N, D_in, D_out = 240, 4256, 1
+N, D_in, D_out = 45, 187, 1
 # batch size. input dimensions, output dimensions
 xtest = []
 ytest = []
@@ -82,7 +82,7 @@ optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
 errorTime = []
 testErrorTime = []
 t = 0
-"""
+
 while t < 500:
     y_pred = model(x)
     loss = criterion(y_pred, y)
@@ -96,11 +96,11 @@ while t < 500:
     testLoss = criterion(test_pred, ytest)
     testErrorTime.append(testLoss.data[0])
     t += 1
-"""
-x0 = x
+
+x0 = xtest
 x1 = F.max_pool2d(F.relu(model.conv1(x0)), 1)
 x2 = F.max_pool2d(F.relu(model.conv2(x1)), 1)
 x3 = F.max_pool2d(F.relu(model.conv3(x2)), 1)
 output = np.array(x3.data)[:,:,0,0]
 
-print(ytest)
+output.tofile('ltd4-test.matrix')

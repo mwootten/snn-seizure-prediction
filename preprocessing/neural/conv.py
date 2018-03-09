@@ -27,9 +27,9 @@ class Net(nn.Module):
 
     def forward(self, x):
         # Max pooling over a (1, 1) window
-        x = F.max_pool2d(F.relu(self.conv1(x)), 1)
-        x = F.max_pool2d(F.relu(self.conv2(x)), 1)
-        x = F.max_pool2d(F.relu(self.conv3(x)), 1)
+        x = F.max_pool1d(F.relu(self.conv1(x)), 1)
+        x = F.max_pool1d(F.relu(self.conv2(x)), 1)
+        x = F.max_pool1d(F.relu(self.conv3(x)), 1)
         x = x.view(-1, self.num_flat_features(x))
         x = self.fc1(x)
         return x
@@ -82,7 +82,7 @@ optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
 errorTime = []
 testErrorTime = []
 t = 0
-while t < 2:
+while t < 500:
     y_pred = model(x)
     loss = criterion(y_pred, y)
     print(t, loss.data[0])
