@@ -7,18 +7,20 @@ import random
 import math
 import matplotlib.pyplot as plt
 import sys
-from optparse import OptionParser
+import argparse
 
-parser = OptionParser("usage: %prog [options] inputs")
+parser = argparse.ArgumentParser()
 
-parser.add_option("-f", "--full",
-                  action="store_const", dest="deleteLayers", const=0,
-                  help="Run the full neural network")
-parser.add_option("-w", "--without",
-                  action="store", dest="deleteLayers", type="int", metavar="n",
-                  help="Delete n layers off the end of the network")
+parser.add_argument("-w", "--without", default=0, type=int, metavar="n",
+                    help="Delete n layers off the end of the network")
+parser.add_argument('files', nargs="*",
+                    help="Files to use as inputs to the network")
+parser.add_argument("-t", "--output-type", choices=['training', 'test'],
+                    default="test",
+                    help="specify the type of data to output information on")
 
-(options, args) = parser.parse_args()
+
+args = parser.parse_args()
 
 #   Title: Neural Networks Tutorial
 #   Author: Chintala, S
@@ -63,7 +65,7 @@ xtest = []
 ytest = []
 x = []
 y = []
-for filename in args:
+for filename in args.files:
     if "test" in filename:
         xtest.append(np.fromfile(filename, dtype = np.dtype("i4")) / 10000)
         if "positive" in filename:
@@ -109,14 +111,18 @@ for t in range(500):
     testLoss = criterion(test_pred, ytest)
     testErrorTime.append(testLoss.data[0])
 
-if options.deleteLayers == 0:
-	rawPredictions = model(xtest).data
+if args.output_type == "training":
+    xs = x
+else:
+    xs = xtest
+
+if args.without == 0:
+	rawPredictions = model(xs).data
 	predictions = list(np.array(rawPredictions)[:, 0])
 	print('\n'.join(map(str, predictions)))
 else:
 	layers = [model.conv1, model.conv2, model.conv3]
-	xs = xtest
-	for n in range(4 - options.deleteLayers):
+	for n in range(4 - args.without):
 		xs = F.max_pool2d(F.relu((layers[n])(xs)), 1)
 	output = np.array(xs.data)[:,:,0,0]
 	print(list(map(list, output)))
