@@ -7,23 +7,34 @@ import random
 import math
 import matplotlib.pyplot as plt
 import sys
+from optparse import OptionParser
+
+parser = OptionParser("usage: %prog [options] inputs")
+
+parser.add_option("-f", "--full",
+                  action="store_const", dest="deleteLayers", const=0,
+                  help="Run the full neural network")
+parser.add_option("-w", "--without",
+                  action="store", dest="deleteLayers", type="int", metavar="n",
+                  help="Delete n layers off the end of the network")
+
+(options, args) = parser.parse_args()
 
 #   Title: Neural Networks Tutorial
 #   Author: Chintala, S
 #   Date: 9/14/2017
 #   Code version: 1.0
-#   Availability: http://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html
+#   Source: http://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html
 class Net(nn.Module):
 
-    def __init__(self):
+    def __init__(self, sizes):
         super(Net, self).__init__()
-        # 3756 input neurons, 1x1 square convolution
-        # 3 Temporal Convolutions 4256 -> 1418 -> 472 -> 157
-        self.conv1 = nn.Conv2d(187, 45, 1)
-        self.conv2 = nn.Conv2d(45, 15, 1)
-        self.conv3 = nn.Conv2d(15, 5, 1)
+        # 1x1 square convolution
+        self.conv1 = nn.Conv2d(sizes[0], sizes[1], 1)
+        self.conv2 = nn.Conv2d(sizes[1], sizes[2], 1)
+        self.conv3 = nn.Conv2d(sizes[2], sizes[3], 1)
         # Convolutional to output neuron
-        self.fc1 = nn.Linear(5, 1)
+        self.fc1 = nn.Linear(sizes[3], 1)
 
     def forward(self, x):
         # Max pooling over a (1, 1) window
@@ -46,14 +57,13 @@ class Net(nn.Module):
 #   Date: 2017
 #   Code version: 1.0
 #   Availability: http://pytorch.org/tutorials/beginner/pytorch_with_examples.html#nn-module
-model = Net()
-N, D_in, D_out = 45, 187, 1
-# batch size. input dimensions, output dimensions
+
+model = Net([187, 45, 15, 5])
 xtest = []
 ytest = []
 x = []
 y = []
-for filename in sys.argv:
+for filename in args:
     if "test" in filename:
         xtest.append(np.fromfile(filename, dtype = np.dtype("i4")) / 10000)
         if "positive" in filename:
@@ -66,27 +76,30 @@ for filename in sys.argv:
             y.append(1)
         else:
             y.append(0)
+
 xtest = np.array(xtest)
 ytest = np.array(ytest)
 x = np.array(x)
 y = np.array(y)
+
 x = Variable(torch.from_numpy(x).float())
 y = Variable(torch.from_numpy(y).float(), requires_grad=False)
 xtest = Variable(torch.from_numpy(xtest).float(), requires_grad=False)
 ytest = Variable(torch.from_numpy(ytest).float(), requires_grad=False)
 xtest = xtest.unsqueeze(-1).unsqueeze(-1)
-x = x.unsqueeze(-1).unsqueeze(-1)
+
 # adding fake dimensions to x for compatibility with convolutions
+x = x.unsqueeze(-1).unsqueeze(-1)
+
 criterion = torch.nn.MSELoss(size_average=False)
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
 errorTime = []
 testErrorTime = []
-t = 0
 
-while t < 500:
+for t in range(500):
     y_pred = model(x)
     loss = criterion(y_pred, y)
-    print(t, loss.data[0])
+    print(t, loss.data[0], file=sys.stderr)
     errorTime.append(loss.data[0])
     # Zero gradients, perform a backward pass, and update the weights.
     optimizer.zero_grad()
@@ -95,12 +108,15 @@ while t < 500:
     test_pred = model(xtest)
     testLoss = criterion(test_pred, ytest)
     testErrorTime.append(testLoss.data[0])
-    t += 1
 
-x0 = xtest
-x1 = F.max_pool2d(F.relu(model.conv1(x0)), 1)
-x2 = F.max_pool2d(F.relu(model.conv2(x1)), 1)
-x3 = F.max_pool2d(F.relu(model.conv3(x2)), 1)
-output = np.array(x3.data)[:,:,0,0]
-
-output.tofile('ltd4-test.matrix')
+if options.deleteLayers == 0:
+	rawPredictions = model(xtest).data
+	predictions = list(np.array(rawPredictions)[:, 0])
+	print('\n'.join(map(str, predictions)))
+else:
+	layers = [model.conv1, model.conv2, model.conv3]
+	xs = xtest
+	for n in range(4 - options.deleteLayers):
+		xs = F.max_pool2d(F.relu((layers[n])(xs)), 1)
+	output = np.array(xs.data)[:,:,0,0]
+	print(list(map(list, output)))
