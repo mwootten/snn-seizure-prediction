@@ -92,7 +92,7 @@ def runNetwork(neuronInput, synapseWeight):
             # summing alpha function values for all received inputs to a neuron
             # an input is recieved from the previous layer when the sum of the
             # input time and the delay is equal to the time
-                    if (len(output) > 0)*(internalState > 1):
+                    if (len(output) > 0)*(internalState > neuronThreshold):
                         internalState += refractoriness(time - output[-1])
                 # adding the refractoriness term for the most recent output
                     if internalState > neuronThreshold:
