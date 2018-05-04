@@ -104,7 +104,7 @@ def runNetwork(neuronInput, synapseWeight):
             # summing alpha function values for all received inputs to a neuron
             # an input is recieved from the previous layer when the sum of the
             # input time and the delay is equal to the time
-                    if (len(output) > 0)*(internalState > 1):
+                    if (len(output) > 0)*(internalState > neuronThreshold):
                         internalState += refractoriness(time - output[-1])
                 # adding the refractoriness term for the most recent output
                     if internalState > neuronThreshold:
@@ -185,8 +185,8 @@ for (neuronInput, expectedOutput) in examples:
               if adjustedTimeOutput > 0:
                 alphaFunctionOutput = previousSynapseWeight[-1][x][a][c] * alpha(adjustedTimeOutput)
                 denominatorOutputInternalState += alphaFunctionOutput*(1/adjustedTimeOutput - 1/timeDecay)
-        if denominatorOutputInternalState < 0.1:
-          denominatorOutputInternalState = 0.1
+        if abs(denominatorOutputInternalState) < 0.1:
+          denominatorOutputInternalState *= 0.1 / abs(denominatorOutputInternalState)
         outputInternalState = -1 / (denominatorOutputInternalState)
         errorGradient = errorOutput * outputInternalState * internalStateWeight
         synapseWeight[-1][x][y][z] = previousSynapseWeight[-1][x][y][z] - learningRate*errorGradient
@@ -208,8 +208,8 @@ for (neuronInput, expectedOutput) in examples:
                   if adjustedTimeOutput > 0:
                     alphaFunctionOutput = previousSynapseWeight[-1][a][b][d] * alpha(adjustedTimeOutput)
                     denominatorOutputInternalState += alphaFunctionOutput*(1/adjustedTimeOutput - 1/timeDecay)
-            if denominatorOutputInternalState < 0.1:
-              denominatorOutputInternalState = 0.1
+            if abs(denominatorOutputInternalState) < 0.1:
+              denominatorOutputInternalState *= 0.1 / abs(denominatorOutputInternalState)
             outputInternalState = -1 / (denominatorOutputInternalState)
             internalStateInputSum = 0
             if errorOutput != 0:
@@ -232,8 +232,8 @@ for (neuronInput, expectedOutput) in examples:
                       alphaFunctionInput = previousSynapseWeight[w-1][x][c][e] * alpha(adjustedTimeInput)
                       if adjustedTimeInput > 0:
                         inputInternalStateDenominator += alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay)
-                if inputInternalStateDenominator < 0.1:
-                    inputInternalStateDenominator = 0.1
+                if abs(inputInternalStateDenominator) < 0.1:
+                    inputInternalStateDenominator *= 0.1 / abs(inputInternalStateDenominator)
                 inputInternalState = -1/inputInternalStateDenominator
                 internalStateWeight = 0
                 for c in range (0, len(networkOutput[w-1][y])):
@@ -254,8 +254,8 @@ for (neuronInput, expectedOutput) in examples:
                         inputInternalStateDenominator += alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay) + (2*neuronThreshold/refractorinessDecay)*refractorinessInput
                       else:
                         inputInternalStateDenominator += (2*neuronThreshold/refractorinessDecay)*refractorinessInput
-                if inputInternalStateDenominator < 0.1:
-                    inputInternalStateDenominator = 0.1
+                if abs(inputInternalStateDenominator) < 0.1:
+                    inputInternalStateDenominator *= 0.1 / abs(inputInternalStateDenominator)
                 inputInternalState = -1/inputInternalStateDenominator
                 internalStateWeight = 0
                 for c in range (0, len(networkOutput[w-1][y])):
