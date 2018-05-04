@@ -15,10 +15,12 @@ parser.add_argument("-w", "--without", default=0, type=int, metavar="n",
                     help="Delete n layers off the end of the network")
 parser.add_argument('files', nargs="*",
                     help="Files to use as inputs to the network")
-parser.add_argument("-t", "--output-type", choices=['training', 'test'],
-                    default="test",
-                    help="specify the type of data to output information on")
-
+parser.add_argument('-r', '--training', default='predicted-training', type=str,
+                    help="Select where to write the outputs of training")
+parser.add_argument('-e', '--testing', default='predicted-testing', type=str,
+                    help="Select where to write the outputs of testing")
+parser.add_argument('-i', '--iterations', default=500, type=int,
+                    help="Number of iterations to use for training")
 
 args = parser.parse_args()
 
@@ -60,7 +62,7 @@ class Net(nn.Module):
 #   Code version: 1.0
 #   Availability: http://pytorch.org/tutorials/beginner/pytorch_with_examples.html#nn-module
 
-model = Net([187, 45, 15, 5])
+model = Net([196, 45, 15, 5])
 xtest = []
 ytest = []
 x = []
@@ -98,7 +100,7 @@ optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
 errorTime = []
 testErrorTime = []
 
-for t in range(500):
+for t in range(args.iterations):
     y_pred = model(x)
     loss = criterion(y_pred, y)
     print(t, loss.data[0], file=sys.stderr)
@@ -111,18 +113,19 @@ for t in range(500):
     testLoss = criterion(test_pred, ytest)
     testErrorTime.append(testLoss.data[0])
 
-if args.output_type == "training":
-    xs = x
-else:
-    xs = xtest
+def writeOutputs(xs, file):
+    if args.without == 0:
+    	rawPredictions = model(xs).data
+    	predictions = list(np.array(rawPredictions)[:, 0])
+    	print('\n'.join(map(str, predictions)), file=file)
+    else:
+    	layers = [model.conv1, model.conv2, model.conv3]
+    	for n in range(4 - args.without):
+    		xs = F.max_pool2d(F.relu((layers[n])(xs)), 1)
+    	output = np.array(xs.data)[:,:,0,0]
+    	print(list(map(list, output)), file=file)
 
-if args.without == 0:
-	rawPredictions = model(xs).data
-	predictions = list(np.array(rawPredictions)[:, 0])
-	print('\n'.join(map(str, predictions)))
-else:
-	layers = [model.conv1, model.conv2, model.conv3]
-	for n in range(4 - args.without):
-		xs = F.max_pool2d(F.relu((layers[n])(xs)), 1)
-	output = np.array(xs.data)[:,:,0,0]
-	print(list(map(list, output)))
+with open(args.training, 'w') as trainFile:
+    writeOutputs(x, trainFile)
+with open(args.testing, 'w') as testFile:
+    writeOutputs(xtest, testFile)

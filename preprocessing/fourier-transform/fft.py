@@ -27,7 +27,8 @@ for filename in args:
 	afterwards = filename[afterwards_index:].replace('raw32', 'freq32')
 	newName = 'out/' + afterwards
 
-	signal = np.fromfile(filename, dtype = np.dtype("i4")) / 10000
+	initial_signal = np.fromfile(filename, dtype = np.dtype("i4")) / 10000
+	signal = np.array([0] * 100 + list(initial_signal) + [0] * 100)
 
 	frequencies = np.fft.rfftfreq(len(signal))
 	fft1 = np.abs(np.fft.rfft(signal))

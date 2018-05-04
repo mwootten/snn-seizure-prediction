@@ -1,24 +1,22 @@
 import math
 import random
 from copy import deepcopy
-import json
-import time
+import ast
+import sys
 
-start = time.time()
+# random.seed(1)
 
-random.seed(1)
-
-# Constants
 neuronThreshold = 1
 synapseNumber = 4
-network = [3, 5, 1]
+network = [21, 5, 1]
 simulationTime = 25
-encodingInterval = 6
+encodingInterval = 10
 refractorinessDecay = 80
-latestOutputSpike = 16
+latestOutputSpike = 20
+learningRate = 0.005
+maxEpoch = 500
 timeDecay = encodingInterval + 1
 
-# calculating synapse delays so that they cover the simulation time
 synapseDelayDelta = int(latestOutputSpike / synapseNumber)
 synapseDelay = [1 + (n * synapseDelayDelta) for n in range(synapseNumber)]
 
@@ -28,7 +26,6 @@ synapseDelay = [1 + (n * synapseDelayDelta) for n in range(synapseNumber)]
 #     > number of layer inputted from
 #       > synapse number
 synapseWeight = []
-# Initialize all weights to 1
 for w in range(1, len(network)):
     outputNeuronWeight = []
     for x in range(0, network[w]):  # w: 1--len
@@ -41,30 +38,45 @@ for w in range(1, len(network)):
         outputNeuronWeight.append(inputNeuronWeight)
     synapseWeight.append(outputNeuronWeight)
 
-neuronInput = []
-for x in range(0, network[0]):
-    neuronInput.append([0])
-
-
 def alpha(t):
+    if t < 0:
+        return 0
+    elif t > 15:
+        return -0.03096833882975574 * (t - 15) + 0.9479235387257438
+    else:
+        v = 1 - (t/timeDecay)
+        return (t/timeDecay) * (1 + v + v*v/2)
+
+'''
+def alpha(t):
+    print('t=' + str(t))
     if t > 0:
         return (t / timeDecay) * math.exp(1 - (t/timeDecay))
     else:
         return 0
+'''
 
+def refractoriness(t):
+    return t/40 - 2
 
+'''
 def refractoriness(time):
-    if time > 0:
-        return -2 * neuronThreshold * math.exp(-time/refractorinessDecay)
-    else:
-        return 0
+    return -2 * neuronThreshold * math.exp(-time/refractorinessDecay)
+'''
+# HACK: This has not been verified with more than one hidden layer. It might
+# fail catastrophically! Please rewrite this more carefully before going insane.
+def getLayerOutput(networkOutput):
+    return networkOutput[1:][0] + (networkOutput[1:][1])
 
 
-# Modifies the global layerOutput
+networkInternalState = []
+layerOutput = []
+
 def runNetwork(neuronInput, synapseWeight):
-    inp = deepcopy(neuronInput)
     networkOutput = [deepcopy(neuronInput)]
     networkInternalState = []
+    layerOutput = []
+
 
     for a in range(0, len(network) - 1):
         outputNeuronNetworkOutput = []
@@ -76,7 +88,7 @@ def runNetwork(neuronInput, synapseWeight):
             output = []
             neuronInternalState = []
             while time <= simulationTime:
-                activationFunction = (time > min(min(inp)))
+                activationFunction = (time > min(min(neuronInput)))
                 internalState = 0
                 if len(output) > 0:
                     activationFunction = ((time - output[-1]) > 2)
@@ -86,8 +98,8 @@ def runNetwork(neuronInput, synapseWeight):
                 if activationFunction == 1:
                     for x in range(0, network[a]):
                         for y in range(0, synapseNumber):
-                            for z in range(0, len(inp[x])):
-                                adjustedTime = -inp[x][z] - synapseDelay[y] + time
+                            for z in range(0, len(neuronInput[x])):
+                                adjustedTime = -neuronInput[x][z] - synapseDelay[y] + time
                                 internalState += synapseWeight[a][b][x][y] * alpha(adjustedTime)
             # summing alpha function values for all received inputs to a neuron
             # an input is recieved from the previous layer when the sum of the
@@ -108,12 +120,16 @@ def runNetwork(neuronInput, synapseWeight):
             layerInternalState.append(neuronInternalState)
             outputNeuronNetworkOutput.append(output)
         networkInternalState.append(layerInternalState)
-        inp = deepcopy(layerOutput)
+        neuronInput = deepcopy(layerOutput)
         networkOutput.append(outputNeuronNetworkOutput)
     return networkOutput
 
-layerOutput = []
-runNetwork(neuronInput, synapseWeight)
+neuronInput = []
+for x in range(0, network[0]):
+    neuronInput.append([0])
+networkOutput = runNetwork(neuronInput, synapseWeight)
+layerOutput = getLayerOutput(networkOutput)
+
 sumSynapseWeight = 0
 weightNumber = 0
 for w in range (1, len(network)):
@@ -131,43 +147,22 @@ for w in range (1, len(network)):
     for y in range (0, network[w-1]):
       for z in range (0, synapseNumber):
         synapseWeight[w-1][x][y][z] /= (meanSynapseWeight * layerOutput[-1][0])
-# reducing the synapse weights based on the average and network output
-# reduces the number of outputs from each neuron
-# print("Network Outputs: " + str(networkOutput))
-learningRate = 0.005  # float(input("Learning Rate?"))
-maxEpoch = 500  # int(input("Max Epochs?"))
-iteration = 1
-examplesPerEpoch = 4
-errorTime = []
-trainingData = [
-    ([[0], [0], [0]], [10]),
-    ([[0], [6], [0]], [16]),
-    ([[6], [0], [0]], [16]),
-    ([[6], [6], [0]], [10])
-]
-examples = []
-for epoch in range(maxEpoch):
-    examples.extend(deepcopy(trainingData))
-for (neuronInput, expectedOutput) in examples:
-  layerOutput = []
-  networkOutput = runNetwork(neuronInput, synapseWeight)
 
-  print("COMPARE: {} vs {}".format(networkOutput[-1][0], expectedOutput))
+errorTime = []
+
+iteration = 0
+exampleFile = sys.argv[1]
+examples = ast.literal_eval(open(exampleFile, 'r').read())
+for (neuronInput, expectedOutput) in examples:
+  networkOutput = runNetwork(neuronInput, synapseWeight)
 
   error = 0.5*sum([
     (networkOutput[-1][x][0] - expectedOutput[x])**2
     for x in range(len(expectedOutput))
   ])
 
-  for (neurons, zorblax) in trainingData:
-      name = '-'.join(list(map(lambda x: str(x[0]), neurons)))
-      actualOutput = runNetwork(neurons, synapseWeight)
-      print(actualOutput)
-      if actualOutput[-1][0] == zorblax:
-          print("Correct for " + name + "   => " + str(zorblax))
-      else:
-          print("Incorrect for " + name + " => " + str(zorblax))
-  print("")
+  iteration += 1
+  print(iteration, error, file=sys.stderr)
 
   errorTime.append(error)
   previousSynapseWeight = deepcopy(synapseWeight)
@@ -195,6 +190,7 @@ for (neuronInput, expectedOutput) in examples:
         outputInternalState = -1 / (denominatorOutputInternalState)
         errorGradient = errorOutput * outputInternalState * internalStateWeight
         synapseWeight[-1][x][y][z] = previousSynapseWeight[-1][x][y][z] - learningRate*errorGradient
+
 
   # Backpropagate through all the remaining layers
   for w in range (1, len(network)-1):
@@ -271,28 +267,5 @@ for (neuronInput, expectedOutput) in examples:
                 inputWeight = inputInternalState*(internalStateWeight+internalStateInput*inputWeight)
             errorGradient = errorGradient + errorInput*inputWeight
           synapseWeight[w-1][x][y][z] = previousSynapseWeight[w-1][x][y][z] - learningRate*errorGradient
-end = time.time()
-print("Time = " + str(end - start))
-print("")
-print("")
 
-print("Network output:")
-for (neurons, expectedOutput) in trainingData:
-    name = '-'.join(list(map(lambda x: str(x[0]), neurons)))
-    actualOutput = runNetwork(neurons, synapseWeight)
-    print(actualOutput)
-    if actualOutput[-1][0] == expectedOutput:
-        print("Correct for " + name + "   => " + str(expectedOutput))
-    else:
-        print("Incorrect for " + name + " => " + str(expectedOutput))
-
-print()
-print(errorTime)
-
-"""
-import matplotlib.pyplot as plt
-xs = range(len(errorTime))
-ys = errorTime
-plt.plot(xs, ys)
-plt.show()
-"""
+print(synapseWeight)

@@ -1,24 +1,25 @@
 from sklearn import svm
-xtest = []
-ytest = []
-x = []
-y = []
-for filename in sys.argv:
-    if "test" in filename:
-        xtest.append(np.fromfile(filename, dtype = np.dtype("i4")) / 10000)
-        if "positive" in filename:
-            ytest.append(1)
-        else:
-            ytest.append(0)
-    if "training" in filename:
-        x.append(np.fromfile(filename, dtype = np.dtype("i4")) / 10000)
-        if "positive" in filename:
-            y.append(1)
-        else:
-            y.append(0)
+import json
+
+def read_json(filename):
+    file = open(filename, 'r')
+    matrix = json.load(file)
+    file.close()
+    return matrix
+
+
+x_name = 'traditional-training.json'
+y_name = ''
+xtest_name = 'traditional-testing.json'
+ytest_name = 't'
+
+x = read_json(x_name)
+y = [0] * 120 + [1] * 120
+xtest = read_json(xtest_name)
+ytest = [0] * 31 + [1] * 31
 
 clf = svm.SVC()
-clf.fit(x, y)  
+clf.fit(x, y)
 svm.SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
     decision_function_shape='ovr', degree=3, gamma='auto', kernel='rbf',
     max_iter=-1, probability=False, random_state=None, shrinking=True,
@@ -26,5 +27,23 @@ svm.SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
 
 predictions = clf.predict(xtest)
 difference = predictions - ytest
-error = 0.5*((difference)**2)
-epochError = sum(error)/len(error)
+
+tp = 0
+tn = 0
+fp = 0
+fn = 0
+
+for pair in zip(predictions, ytest):
+    if pair == (0, 0):
+        tn += 1
+    if pair == (0, 1):
+        fn += 1
+    if pair == (1, 0):
+        fp += 1
+    if pair == (1, 1):
+        tp += 1
+
+fpr = fp / (tn + fp)
+tpr = tp / (tp + fn)
+
+print((fpr, tpr))

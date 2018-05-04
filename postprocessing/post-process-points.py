@@ -65,9 +65,9 @@ def roc_points():
     The pairs are (1 - specificity, sensitivity), or (FPR, TPR)
     '''
 
-    thresholds = sorted([float('-inf'), *predicted[1:-1], float('inf')])
+    thresholds = [0, *sorted(predicted), 1]
     fpr = [1 - specificity(threshold) for threshold in thresholds]
-    tpr = [sensitivity(threshold) for threshold in thresholds]
+    tpr = [sensitivity(threshold) for threshold in [0, *sorted(predicted), 1]]
     return (np.array(fpr), np.array(tpr))
 
 def plot_curve(roc, file):
@@ -94,7 +94,4 @@ def gini_coefficient(points):
     return 2 * sum(1/2 * (lvals + rvals) * widths)
 
 roc = roc_points()
-gini = gini_coefficient(roc)
-print('Gini:', gini)
-print('AUROC:', 0.5 * gini + 0.5)
-plot_curve(roc, args.output)
+print(roc)

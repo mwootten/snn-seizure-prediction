@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import sys
 from copy import deepcopy
 import json
+from torchviz import make_dot, make_dot_from_trace
 
 neuronThreshold = 1
 
@@ -51,7 +52,7 @@ for w in range(synapseNumber):
             else:
                 if x < (sum(network[0:2])):
                     matrixRow.append(y < network[0])
-                else: 
+                else:
                     matrixRow.append((y >= network[0])*(y != (sum(network)-1)))
         weightMatrix.append(matrixRow)
     initialWeightMatrix = torch.FloatTensor(weightMatrix)
@@ -79,7 +80,7 @@ for w in range(0, simulationTime + 1):
         inputMatrix.append(0)
     inputMatrix = Variable(torch.FloatTensor(inputMatrix), requires_grad = False)
     inputMatrices.append(inputMatrix)
-# initial inputs to network at time 0 
+# initial inputs to network at time 0
 timeMatrix = []
 for x in range(0, simulationTime + 1):
     for y in range(0, sum(network)):
@@ -101,7 +102,7 @@ def runNetwork(neuronInput):
                 internalState = internalState + torch.mm(weightMatrices[y],(alpha(x - outputMatrices[z] * timeMatrix[z*sum(network):(z+1)*sum(network)] - synapseDelay[y])*outputMatrices[z]).unsqueeze(-1))
         for y in range(0, len(outputMatrices)):
             refractorinessValue = refractorinessValue + refractoriness((x - outputMatrices[y]*y))*outputMatrices[y] - refractorinessValue*outputMatrices[y]
-        internalState = internalState + refractorinessValue.unsqueeze(-1)       
+        internalState = internalState + refractorinessValue.unsqueeze(-1)
         output = ((internalState - 1)/(torch.abs(internalState - 1)) + 1)/2
         outputMatrix = inputMatrices[x] + output.squeeze(1)
         outputMatrices.append(outputMatrix)
@@ -119,7 +120,7 @@ for w in range(synapseNumber):
             else:
                 if x < (sum(network[0:2])):
                     matrixRow.append((y < network[0])*(random.uniform(1.0,10.0)))
-                else: 
+                else:
                     matrixRow.append((y >= network[0])*(y != (sum(network)-1))*(random.uniform(1.0,10.0)))
         weightMatrix.append(matrixRow)
     weightMatrix = torch.FloatTensor(weightMatrix)
@@ -156,9 +157,9 @@ for a in range(500):
             for x in range(0, sum(network[1:len(network)])):
                 inputMatrix.append(0)
             inputMatrix = Variable(torch.FloatTensor(inputMatrix), requires_grad = False)
-            inputMatrices.append(inputMatrix) 
+            inputMatrices.append(inputMatrix)
         outputMatrices = [inputMatrices[0]]
-        runNetwork(neuronInput)      
+        runNetwork(neuronInput)
         networkOutput = 0
         for x in range(simulationTime+1):
             networkOutput = networkOutput + outputMatrices[-x][-1]*(simulationTime-x+1) - networkOutput*outputMatrices[-x][-1]
