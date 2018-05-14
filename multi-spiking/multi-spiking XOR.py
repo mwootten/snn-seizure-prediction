@@ -175,6 +175,17 @@ for (neuronInput, expectedOutput) in examples:
   # Backpropagate through the final level of synapses: from output to the last
   # hidden layer
   for x in range (0, network[-1]):
+    denominatorOutputInternalState = 0
+    for a in range (0, network[-2]):
+      for b in range (0, len(networkOutput[-2][a])):
+        for c in range (0, synapseNumber):
+          adjustedTimeOutput = networkOutput[-1][x][0] - networkOutput[-2][a][b] - synapseDelay[c]
+          if adjustedTimeOutput > 0:
+            alphaFunctionOutput = previousSynapseWeight[-1][x][a][c] * alpha(adjustedTimeOutput)
+            denominatorOutputInternalState += alphaFunctionOutput*(1/adjustedTimeOutput - 1/timeDecay)
+    if abs(denominatorOutputInternalState) < 0.1:
+      denominatorOutputInternalState = 0.1 - 0.2*(denominatorOutputInternalState < 0)
+    outputInternalState = -1 / (denominatorOutputInternalState)
     for y in range (0, network[-2]):
       for z in range (0, synapseNumber):
         errorOutput = networkOutput[-1][x][0] - expectedOutput[x]
@@ -182,17 +193,6 @@ for (neuronInput, expectedOutput) in examples:
         for a in range (0, len(networkOutput[-2][y])):
           adjustedTimeOutput = networkOutput[-1][x][0] - networkOutput[-2][y][a] - synapseDelay[z]
           internalStateWeight += alpha(adjustedTimeOutput)
-        denominatorOutputInternalState = 0
-        for a in range (0, network[-2]):
-          for b in range (0, len(networkOutput[-2][a])):
-            for c in range (0, synapseNumber):
-              adjustedTimeOutput = networkOutput[-1][x][0] - networkOutput[-2][a][b] - synapseDelay[c]
-              if adjustedTimeOutput > 0:
-                alphaFunctionOutput = previousSynapseWeight[-1][x][a][c] * alpha(adjustedTimeOutput)
-                denominatorOutputInternalState += alphaFunctionOutput*(1/adjustedTimeOutput - 1/timeDecay)
-        if abs(denominatorOutputInternalState) < 0.1:
-          denominatorOutputInternalState = 0.1 - 0.2*(denominatorOutputInternalState < 0)
-        outputInternalState = -1 / (denominatorOutputInternalState)
         errorGradient = errorOutput * outputInternalState * internalStateWeight
         synapseWeight[-1][x][y][z] = previousSynapseWeight[-1][x][y][z] - learningRate*errorGradient
 
