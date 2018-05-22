@@ -62,20 +62,20 @@ class Net(nn.Module):
 #   Code version: 1.0
 #   Availability: http://pytorch.org/tutorials/beginner/pytorch_with_examples.html#nn-module
 
-model = Net([196, 45, 15, 5])
+model = Net([135, 45, 15, 5])
 xtest = []
 ytest = []
 x = []
 y = []
 for filename in args.files:
     if "test" in filename:
-        xtest.append(np.fromfile(filename, dtype = np.dtype("i4")) / 10000)
+        xtest.append(np.fromfile(filename, dtype = np.dtype("i4")) / 50000)
         if "positive" in filename:
             ytest.append(1)
         else:
             ytest.append(0)
     if "training" in filename:
-        x.append(np.fromfile(filename, dtype = np.dtype("i4")) / 10000)
+        x.append(np.fromfile(filename, dtype = np.dtype("i4")) / 50000)
         if "positive" in filename:
             y.append(1)
         else:
