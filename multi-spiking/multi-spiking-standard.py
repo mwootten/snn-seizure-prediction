@@ -1,14 +1,17 @@
 import math
 import random
 from copy import deepcopy
-import ast
+import pickle
 import sys
 
 # random.seed(1)
 
+def scaleGeometrically(initial, size):
+    return list(map(lambda n: int(initial ** (n/(size-1)) + 0.5), reversed(range(size))))
+
 neuronThreshold = 1
 synapseNumber = 4
-network = [21, 5, 1]
+network = scaleGeometrically(int(sys.argv[2]), int(sys.argv[3]))
 simulationTime = 25
 encodingInterval = 10
 refractorinessDecay = 80
@@ -127,8 +130,11 @@ def runNetwork(neuronInput, synapseWeight):
 neuronInput = []
 for x in range(0, network[0]):
     neuronInput.append([0])
+layerOutput = []
 networkOutput = runNetwork(neuronInput, synapseWeight)
 layerOutput = getLayerOutput(networkOutput)
+
+# print(layerOutput)
 
 sumSynapseWeight = 0
 weightNumber = 0
@@ -151,8 +157,9 @@ for w in range (1, len(network)):
 errorTime = []
 
 iteration = 0
-exampleFile = sys.argv[1]
-examples = ast.literal_eval(open(exampleFile, 'r').read())
+exampleFile = open(sys.argv[1], 'rb')
+examples = pickle.load(exampleFile)
+exampleFile.close()
 for (neuronInput, expectedOutput) in examples:
   networkOutput = runNetwork(neuronInput, synapseWeight)
 
@@ -219,7 +226,7 @@ for (neuronInput, expectedOutput) in examples:
                         alphaFunctionInput = previousSynapseWeight[w-1][x][y][c] * alpha(adjustedTimeInput)
                         if adjustedTimeInput > 0:
                             internalStateInputSum = internalStateInputSum + alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay)
-                internalStateInput = -1*internalStateInputSum
+            internalStateInput = -1*internalStateInputSum
             errorInput = errorOutput*outputInternalState*internalStateInput
             inputWeight = 0
             for b in range (0, len(networkOutput[w][x])):

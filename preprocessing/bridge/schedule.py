@@ -1,10 +1,11 @@
 import json
 import random
 import sys
+import pickle
 
 positiveOutputTime = 15
 negativeOutputTime = 20
-iterationsPerExample = 500
+iterationsPerExample = 100
 
 rawInputs = json.load(open(sys.argv[1], 'r'))
 inputsPerClass = int(len(rawInputs) / 2)
@@ -20,4 +21,6 @@ possibilities = list(zip(inputs, outputs))
 sequence = possibilities * iterationsPerExample
 random.shuffle(sequence)
 
-print(sequence)
+ofh = open(sys.argv[2], 'wb')
+pickle.dump(sequence, ofh)
+ofh.close()

@@ -1,7 +1,7 @@
 import math
 from copy import deepcopy
 import json
-import ast
+import pickle
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -15,7 +15,7 @@ args = parser.parse_args()
 
 
 synapseWeight = json.load(open(args.weights, 'r'))
-testCases = ast.literal_eval(open(args.testCases, 'r').read())
+testCases = pickle.load(open(args.testCases, 'rb'))
 
 neuronThreshold = 1
 synapseNumber = 4
