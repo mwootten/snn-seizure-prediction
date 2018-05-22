@@ -177,6 +177,7 @@ for (neuronInput, expectedOutput) in examples:
   # Backpropagate through the final level of synapses: from output to the last
   # hidden layer
   for x in range (0, network[-1]):
+    errorOutput = networkOutput[-1][x][0] - expectedOutput[x]
     denominatorOutputInternalState = 0
     for a in range (0, network[-2]):
       for b in range (0, len(networkOutput[-2][a])):
@@ -190,7 +191,6 @@ for (neuronInput, expectedOutput) in examples:
     outputInternalState = -1 / (denominatorOutputInternalState)
     for y in range (0, network[-2]):
       for z in range (0, synapseNumber):
-        errorOutput = networkOutput[-1][x][0] - expectedOutput[x]
         internalStateWeight = 0
         for a in range (0, len(networkOutput[-2][y])):
           adjustedTimeOutput = networkOutput[-1][x][0] - networkOutput[-2][y][a] - synapseDelay[z]
@@ -249,13 +249,13 @@ for (neuronInput, expectedOutput) in examples:
                     internalStateWeight += alpha(adjustedTimeInput)
                 inputWeight = inputInternalState*internalStateWeight
               if b > 0:
+                adjustedTimeRefractoriness = networkOutput[w][x][b] - networkOutput[w][x][b-1]
+                refractorinessInput = refractoriness(adjustedTimeRefractoriness)
                 inputInternalStateDenominator = 0
                 for c in range (0, network[w-1]):
                   for d in range (0, len(networkOutput[w-1][c])):
                     for e in range (0, synapseNumber):
                       adjustedTimeInput = networkOutput[w][x][b] - networkOutput[w-1][c][d] - synapseDelay[e]
-                      adjustedTimeRefractoriness = networkOutput[w][x][b] - networkOutput[w][x][b-1]
-                      refractorinessInput = refractoriness(adjustedTimeRefractoriness)
                       if adjustedTimeInput > 0:
                         alphaFunctionInput = previousSynapseWeight[w-1][x][c][e] * alpha(adjustedTimeInput)
                         inputInternalStateDenominator += alphaFunctionInput*(1/adjustedTimeInput - 1/timeDecay) + (2*neuronThreshold/refractorinessDecay)*refractorinessInput
@@ -268,8 +268,6 @@ for (neuronInput, expectedOutput) in examples:
                 for c in range (0, len(networkOutput[w-1][y])):
                   adjustedTimeInput = networkOutput[w][x][b] - networkOutput[w-1][y][c] - synapseDelay[z]
                   internalStateWeight += alpha(adjustedTimeInput)
-                adjustedTimeRefractoriness = networkOutput[w][x][b] - networkOutput[w][x][b-1]
-                refractorinessInput = refractoriness(adjustedTimeRefractoriness)
                 internalStateInput = (2*neuronThreshold/refractorinessDecay)*refractorinessInput
                 inputWeight = inputInternalState*(internalStateWeight+internalStateInput*inputWeight)
             errorGradient = errorGradient + errorInput*inputWeight
