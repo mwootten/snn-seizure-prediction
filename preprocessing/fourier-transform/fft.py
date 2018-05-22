@@ -18,25 +18,25 @@ train_pre = []
 test_pre = []
 
 for filename in args:
-	word = ''
-	if "test" in filename:
-		word = 'test'
-	if "training" in filename:
-		word = 'training'
-	afterwards_index = filename.index(word)
-	afterwards = filename[afterwards_index:].replace('raw32', 'freq32')
-	newName = 'out/' + afterwards
+    word = ''
+    if "test" in filename:
+        word = 'test'
+    if "training" in filename:
+        word = 'training'
+    afterwards_index = filename.index(word)
+    afterwards = filename[afterwards_index:].replace('raw32', 'freq32')
+    newName = 'out/' + afterwards
 
-	initial_signal = np.fromfile(filename, dtype = np.dtype("i4")) / 10000
-	signal = np.array([0] * 100 + list(initial_signal) + [0] * 100)
+    initial_signal = np.fromfile(filename, dtype = np.dtype("i4")) / 10000
+    signal = np.array([0] * 100 + list(initial_signal) + [0] * 100)
 
-	frequencies = np.fft.rfftfreq(len(signal))
-	fft1 = np.abs(np.fft.rfft(signal))
+    frequencies = np.fft.rfftfreq(len(signal))
+    fft1 = np.abs(np.fft.rfft(signal))
 
-	importantValues = []
-	for (i, val) in enumerate(fft1):
-		if lofreq <= frequencies[i] <= hifreq:
-			importantValues.append(val)
-
-	importantArr = np.asarray((np.array(importantValues) * 100000).round(), dtype=np.int32)
-	importantArr.tofile(newName)
+    relevantIndices = ((lofreq <= frequencies) & (frequencies <= hifreq)).nonzero()[0]
+    minIndex = relevantIndices.min()
+    maxIndex = relevantIndices.max()
+    stepSize = (maxIndex - minIndex) / 135
+    selectedIndices = np.arange(minIndex, maxIndex, stepSize).astype(int)
+    importantArr = (fft1[selectedIndices] * 100000).round().astype(np.int32)
+    importantArr.tofile(newName)
