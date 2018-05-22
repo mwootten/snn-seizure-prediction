@@ -17,7 +17,7 @@ minutes = 60 * seconds
 # Time before the seizure's start when the sample starts
 sampleStartOffset = 10 * minutes
 # Duration of the sample
-sampleDuration = 10 * seconds
+sampleDuration = 5 * minutes
 
 
 def usecsToBytes(usecs):

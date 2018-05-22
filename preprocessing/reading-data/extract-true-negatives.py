@@ -45,7 +45,7 @@ minutes = 60 * seconds
 
 excludeBefore = 30 * minutes
 excludeAfter = 30 * minutes
-sampleDuration = 10 * seconds
+sampleDuration = 5 * minutes
 
 def usecsToBytes(usecs):
     return 4 * int(round(usecs / eegLengthUsecs * channelFileLengthDwords))
