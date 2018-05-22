@@ -38,7 +38,7 @@ def writeSlice(channelHandle, outputName, sampleStart, sampleDuration):
 
 for (num, seizureStartUsecs) in enumerate(seizureStartsUsecs):
     sampleStartUsecs = seizureStartUsecs - sampleStartOffset
-    outputName = channelFile.split('.')[0] + "-positive-" + str(num) + ".raw32"
+    outputName = channelFile.split('.')[0] + "-positive-" + str(num).zfill(3) + ".raw32"
     writeSlice(f, outputName, sampleStartUsecs, sampleDuration)
 
 f.close()

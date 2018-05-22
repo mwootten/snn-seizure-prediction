@@ -167,6 +167,6 @@ for num in range(negativesCount):
     actualSliceStart = indexWithinAcceptableRegions + getAddend(indexWithinAcceptableRegions)
 
     # Step 6: Write out the sample.
-    outputName = outputName = channelFile.split('.')[0] + "-negative-" + str(num) + ".raw32"
+    outputName = outputName = channelFile.split('.')[0] + "-negative-" + str(num).zfill(3) + ".raw32"
     writeSlice(f, outputName, actualSliceStart, sampleDuration)
 f.close()
