@@ -1,0 +1,21 @@
+digraph G {
+
+	node [penwidth=3];
+	edge [penwidth=3];
+
+	rankdir=LR;
+	medical [label="EEG"];
+	fft [label="FFT"];
+	trad_nn [label="Traditional \n Neural Network (NN)"];
+	multi [label="Multi-spiking NN"];
+	svm [label="SVM"];
+	post [label="Confusion matrix\nROC"];
+
+	medical -> fft;
+	fft -> trad_nn;
+	trad_nn -> multi;
+	trad_nn -> svm;
+	trad_nn -> post;
+	multi -> post;
+	svm -> post;
+}
