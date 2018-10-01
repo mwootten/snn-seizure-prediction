@@ -24,8 +24,8 @@ class Net(nn.Module):
         self.conv3 = nn.Conv2d(sizes[2], sizes[3], 1)
         self.conv4 = nn.Conv2d(sizes[3], sizes[4], 1)
         # Convolutional to linear neuron
-        self.fc1 = nn.Linear(2700, 64)
-        self.fc2 = nn.Linear(64, 1)
+        self.fc1 = nn.Linear(sizes[5], sizes[6])
+        self.fc2 = nn.Linear(sizes[6], 1)
 
     def forward(self, x):
         # Max pooling over a (1, 1) window
@@ -50,7 +50,7 @@ class Net(nn.Module):
 #   Code version: 1.0
 #   Availability: http://pytorch.org/tutorials/beginner/pytorch_with_examples.html#nn-module
 
-model = Net([1, 68, 23, 10, 5, 3])
+model = Net([1, 68, 23, 10, 5, 2700, 64])
 # sample test/train data, telling if the inputs are from identical types of function either tan or cos
 xtest = []
 ytest = []
