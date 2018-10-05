@@ -53,86 +53,10 @@ class Net(nn.Module):
 
 model = Net([1, 68, 23, 10, 5, 140, 64])
 # sample test/train data, telling if the inputs are from identical types of function either tan or cos
-xtest = []
-ytest = []
-x = []
-y = []
-for a in range(4):
-  func1 = []
-  func2 = []
-  for b in range(135):
-    func1.append(math.cos(b+math.exp(a)))
-  for b in range(135):
-    func2.append(math.cos(b-2*a))
-  xtest.append([[func1,func2]])
-  ytest.append([1])
-for a in range(4):
-  func1 = []
-  func2 = []
-  for b in range(135):
-    func1.append(math.tan(b+math.exp(a)))
-  for b in range(135):
-    func2.append(math.tan(b-2*a))
-  xtest.append([[func1,func2]])
-  ytest.append([1])
-for a in range(4):
-  func1 = []
-  func2 = []
-  for b in range(135):
-    func1.append(math.tan(b+math.exp(a)))
-  for b in range(135):
-    func2.append(math.cos(b-2*a))
-  xtest.append([[func1,func2]])
-  ytest.append([0])
-for a in range(4):
-  func1 = []
-  func2 = []
-  for b in range(135):
-    func1.append(math.cos(b+math.exp(a)))
-  for b in range(135):
-    func2.append(math.tan(b-2*a))
-  xtest.append([[func1,func2]])
-  ytest.append([0])
-for a in range(16):
-  func1 = []
-  func2 = []
-  for b in range(135):
-    func1.append(math.cos(b+a))
-  for b in range(135):
-    func2.append(math.cos(b-a))
-  x.append([[func1,func2]])
-  y.append([1])
-for a in range(16):
-  func1 = []
-  func2 = []
-  for b in range(135):
-    func1.append(math.tan(b+a))
-  for b in range(135):
-    func2.append(math.tan(b-a))
-  x.append([[func1,func2]])
-  y.append([1])
-for a in range(16):
-  func1 = []
-  func2 = []
-  for b in range(135):
-    func1.append(math.tan(b+a))
-  for b in range(135):
-    func2.append(math.cos(b-a))
-  x.append([[func1,func2]])
-  y.append([0])
-for a in range(16):
-  func1 = []
-  func2 = []
-  for b in range(135):
-    func1.append(math.cos(b+a))
-  for b in range(135):
-    func2.append(math.tan(b-a))
-  x.append([[func1,func2]])
-  y.append([0])
-xtest = np.array(xtest)
-ytest = np.array(ytest)
-x = np.array(x)
-y = np.array(y)
+xtest = np.load("xtest.npy")
+ytest = np.load("ytest.npy")
+x = np.load("xtrain.npy")
+y = np.load("ytrain.npy")
 
 
 x = Variable(torch.from_numpy(x).float())
