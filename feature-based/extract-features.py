@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.stats
 import pywt
+import networkx as nx
 
 sample_rate = 1
 
@@ -18,7 +19,7 @@ def kurtosis(signal):
 
 def stdev(signal):
     return np.std(signal)
-
+and
 def zero_crossings(signal):
     return len(np.where(np.diff(np.signbit(signal)))[0])
 
@@ -50,11 +51,11 @@ def energy_percentages(signal):
     fft = np.abs(np.fft.rfft(signal))
     overall = np.trapz(fft, freqs)
     delta = np.trapz(fft[freqs <= 3], dx=sample_rate)
-    theta = np.trapz(fft[freqs > 4 && freqs < 7], freqs[freqs > 4 && freqs < 7])
-    alpha = np.trapz(fft[freqs > 8 && freqs < 13], freqs[freqs > 8 && freqs < 13])
-    beta = np.trapz(fft[freqs > 14 && freqs < 30], freqs[freqs > 14 && freqs < 30])
-    gamma1 = np.trapz(fft[freqs > 30 && freqs < 55], freqs[freqs > 30 && freqs < 55])
-    gamma2 = np.trapz(fft[freqs > 65 && freqs < 110], freqs[freqs > 65 && freqs < 110])
+    theta = np.trapz(fft[freqs > 4 and freqs < 7], freqs[freqs > 4 and freqs < 7])
+    alpha = np.trapz(fft[freqs > 8 and freqs < 13], freqs[freqs > 8 and freqs < 13])
+    beta = np.trapz(fft[freqs > 14 and freqs < 30], freqs[freqs > 14 and freqs < 30])
+    gamma1 = np.trapz(fft[freqs > 30 and freqs < 55], freqs[freqs > 30 and freqs < 55])
+    gamma2 = np.trapz(fft[freqs > 65 and freqs < 110], freqs[freqs > 65 and freqs < 110])
     return np.array([delta, theta, alpha, beta, gamma1, gamma2]) / overall
 
 def discrete_wavelet(signal):
@@ -63,24 +64,39 @@ def discrete_wavelet(signal):
 
 def max_absolute_cross_correlations(signal1, signal2):
     assert len(signal1) == len(signal2)
-    """
-    correlate x1[:1] x2[-1:]
-    correlate x1[:2] x2[-2:]
-    correlate x1[:3] x2[-3:]
-    correlate x1 x2
-    correlate x1[:-3] x2[3:]
-    correlate x1[:-2] x2[2:]
-    correlate x1[:-1] x2[1:]
-    """
-    for tau in range(len(signal1 - 1)):
-        pass
+    correlations = []
+    for i in range(1, len(signal1)):
+        correlations.append(np.correlate(signal1[:i], signal2[-i:]))
+    correlations.append(np.correlate(signal1, signal2))
+    for i in range(len(signal2), 0, -1):
+        correlations.append(np.correlate(signal1[:-i], signal2[i:]))
+    return max(correlations)
+
+# https://stackoverflow.com/questions/643699/how-can-i-use-numpy-correlate-to-do-autocorrelation
+def autocorr(x, t=1):
+    return numpy.corrcoef(numpy.array([x[0:len(x)-t], x[t:len(x)]]))
 
 def decorrelation_times(signal):
-    pass
+    t = 0
+    while autocorr(signal, t) > np.exp(-1):
+        t += 1
+    return t
 
 # Graph theoretic
-def make_graph(signal):
-    pass
+def make_cross_correlation_graph(signals):
+    G = nx.Graph()
+    for (c1, v1) in signals.items():
+        for (c2, v2) in signals.items():
+            G.add_edge(c1, c2, weight=max_absolute_cross_correlations(v1, v2))
 
-def clustering_coefficient(signal):
-    pass
+def parameters(G):
+    return [
+        nx.algorithms.cluster.clustering(G),
+        nx.algorithms.efficiency.local_efficiency(G),
+        nx.algorithms.centrality.betweenness_centrality(G),
+        nx.algorithms.distance_measures.eccentricity(G),
+        nx.algorithms.efficiency.global_efficiency(G),
+        nx.algorithms.distance_measures.diameter(G),
+        nx.algorithms.distance_measures.radius(G),
+        nx.algorithms.shortest_paths.generic.average_shortest_path_length(G, weight='weight')
+    ]
