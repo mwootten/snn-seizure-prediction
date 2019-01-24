@@ -144,6 +144,8 @@ ytest = Variable(torch.from_numpy(ytest).float(), requires_grad=False)
 
 trainset = TensorDataset(x,y)
 loader = DataLoader(trainset, batch_size=batchSize, shuffle=True)
+testset = TensorDataset(xtest,ytest)
+testloader = DataLoader(testset, batch_size=batchSize, shuffle=True)
 
 criterion = torch.nn.MSELoss(reduction='sum')
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
@@ -160,15 +162,16 @@ for t in range(epochs):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        # test_pred = model(xtest)
-        # testLoss = criterion(test_pred, ytest)
-        # testErrorTime.append(testLoss.data.item())
+    for (xtest,ytest) in testloader:
+        test_pred = model(xtest)
+        testLoss = criterion(test_pred, ytest)
+        testErrorTime.append(testLoss.data.item())
 
 import matplotlib.pyplot as plt
 xs = range(len(errorTime))
 ys = errorTime
 plt.plot(xs, ys)
-# xsb = range(len(testErrorTime))
-# ysb = testErrorTime
-# plt.plot(xsb, ysb)
+xsb = range(len(testErrorTime))
+ysb = testErrorTime
+plt.plot(xsb, ysb)
 plt.show()
