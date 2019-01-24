@@ -16,8 +16,8 @@ from torch.utils.data import TensorDataset, DataLoader
 #   Source: http://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html
 
 # Hyperparameters:
-# epochs = 100
-# batchSize = 1000
+epochs = 1
+batchSize = 100
 
 class Net(nn.Module):
 
@@ -75,11 +75,24 @@ class Net(nn.Module):
 #   Availability: http://pytorch.org/tutorials/beginner/pytorch_with_examples.html#nn-module
 
 model = Net([643, 160, 40, 10, 2])
-xtest = np.load("xtest.npy")
-ytest = np.load("ytest.npy")
-x = np.load("xtrain.npy")
-y = np.load("ytrain.npy")
-
+xFiles = ['01_03','01_15','01_16','01_21','01_26','03_01','03_03','03_04','03_34','03_36','05_06','05_13','05_16','05_17','05_22']
+xtestFiles = ['01_04','01_18','03_02','03_35']
+x = []
+y = []
+for a in range(len(xFiles)):
+    xsample = np.load('Xs\\chb'+xFiles[a]+'.npy')
+    ysample = np.load('Ys\\chb'+xFiles[a]+'.npy')
+    for a in range(len(xsample)):
+        x.append(xsample[a])
+        y.append(ysample[a])
+xtest = []
+ytest = []
+for a in range(len(xtestFiles)):
+    xsample = np.load('Xs\\chb'+xtestFiles[a]+'.npy')
+    ysample = np.load('Ys\\chb'+xtestFiles[a]+'.npy')
+    for a in range(len(xsample)): 
+        xtest.append(xsample[a])
+        ytest.append(ysample[a])
 #blank data inputs
 #x = []
 #y = [26, 21, 16, 11, 6, 1, 7, 2, 135, 130, 125, 120, 115, 110, 105, 100, 95, 90, 85, 80]
