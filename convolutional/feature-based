@@ -15,28 +15,50 @@ from torch.utils.data import TensorDataset, DataLoader
 #   Code version: 1.0
 #   Source: http://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html
 
+# Hyperparameters:
+# epochs = 100
+# batchSize = 1000
+
 class Net(nn.Module):
 
     def __init__(self, sizes):
         super(Net, self).__init__()
         # 2x2 square convolution
-        self.conv1 = nn.Conv2d(sizes[0], sizes[1], 2)
-        self.conv2 = nn.Conv1d(sizes[1], sizes[2], 1)
-        self.conv3 = nn.Conv1d(sizes[2], sizes[3], 1)
-        self.conv4 = nn.Conv1d(sizes[3], sizes[4], 1)
+        self.conv1 = nn.Conv2d(1, 1, [2,1])
+        self.conv2 = nn.Conv2d(1, 1, [2,1])
+        self.conv3 = nn.Conv2d(1, 1, [2,1])
+        self.conv4 = nn.Conv2d(1, 1, [2,1])
+        self.conv5 = nn.Conv2d(1, 1, [2,1])
         # Convolutional to linear neuron
-        self.fc1 = nn.Linear(sizes[5], sizes[6])
-        self.fc2 = nn.Linear(sizes[6], 1)
+        self.fc1 = nn.Linear(sizes[0], sizes[1])
+        self.fc2 = nn.Linear(sizes[1], sizes[2])
+        self.fc3 = nn.Linear(sizes[2], sizes[3])
+        self.fc4 = nn.Linear(sizes[3], sizes[4])
+        self.fc5 = nn.Linear(sizes[4], 1)
 
     def forward(self, x):
         # Max pooling over a (1, 1) window
-        x = F.max_pool2d(F.relu(self.conv1(x)), 1)
-        x.squeeze_(2)
-        x = F.max_pool1d(F.relu(self.conv2(x)), 3)
-        x = F.max_pool1d(F.relu(self.conv3(x)), 3)
+        #print(x.size())
+        x = F.max_pool2d(F.relu(self.conv1(x)), [1,1])
+        #print(x.size())
+        x = F.max_pool2d(F.relu(self.conv2(x)), [1,1])
+        #print(x.size())
+        x = F.max_pool2d(F.relu(self.conv3(x)), [1,1])
+        #print(x.size())
+        x = F.max_pool2d(F.relu(self.conv4(x)), [1,1])
+        #print(x.size())
         x = x.view(-1, self.num_flat_features(x))
+        #print(x.size())
         x = self.fc1(x)
+        #print(x.size())
         x = self.fc2(x)
+        #print(x.size())
+        x = self.fc3(x)
+        #print(x.size())
+        x = self.fc4(x)
+        #print(x.size())
+        x = self.fc5(x)
+        #print(x.size())
         return x
 
     def num_flat_features(self, x):
@@ -52,63 +74,82 @@ class Net(nn.Module):
 #   Code version: 1.0
 #   Availability: http://pytorch.org/tutorials/beginner/pytorch_with_examples.html#nn-module
 
-model = Net([1, 68, 23, 10, 5, 140, 64])
+model = Net([643, 160, 40, 10, 2])
 xtest = np.load("xtest.npy")
 ytest = np.load("ytest.npy")
 x = np.load("xtrain.npy")
 y = np.load("ytrain.npy")
+
+#blank data inputs
+#x = []
+#y = [26, 21, 16, 11, 6, 1, 7, 2, 135, 130, 125, 120, 115, 110, 105, 100, 95, 90, 85, 80]
+#xtest = []
+#ytest = [26, 21, 16, 11, 6]
+#sample = []
+#for a in range(643):
+#    sample.append(0)
+#for a in range(20):
+#    x.append(sample)
+#for a in range(5):
+#    xtest.append(sample)
+
+#creating eligible groups of five samples for input
+#training data set
 xtrain = []
 ytrain = []
 n = 0
 for a in range(len(x)):
     n += 1
-    if n > 4:
-        if y[a] > 5:
+    if y[a] > 5:
+        if n > 4:
             xtrain.append([x[a-4], x[a-3], x[a-2], x[a-1], x[a]])
-            ytrain.append([y[a-4], y[a-3], y[a-2], y[a-1], y[a]])
-        else:
+            ytrain.append([y[a]])
             n = 0
+    else:
+        n = 0
+#testing data set
 xset = []
 yset = []
 n = 0
 for a in range(len(xtest)):
     n += 1
-    if n > 4:
-        if ytest[a] > 5:
+    if ytest[a] > 5:
+        if n > 4:
             xset.append([xtest[a-4], xtest[a-3], xtest[a-2], xtest[a-1], xtest[a]])
-            yset.append([ytest[a-4], ytest[a-3], ytest[a-2], ytest[a-1], ytest[a]])
-        else:
+            yset.append([ytest[a]])
             n = 0
+    else:
+        n = 0
 xtest = np.array(xset)
 ytest = np.array(yset)
 x = np.array(xtrain)
 y = np.array(ytrain)
-x = Variable(torch.from_numpy(x).float())
+x = Variable(torch.from_numpy(x).float()).unsqueeze(1)
 y = Variable(torch.from_numpy(y).float(), requires_grad=False)
-xtest = Variable(torch.from_numpy(xtest).float(), requires_grad=False)
+xtest = Variable(torch.from_numpy(xtest).float(), requires_grad=False).unsqueeze(1)
 ytest = Variable(torch.from_numpy(ytest).float(), requires_grad=False)
 
 trainset = TensorDataset(x,y)
-loader = DataLoader(trainset, batch_size=1000, shuffle=True)
+loader = DataLoader(trainset, batch_size=batchSize, shuffle=True)
 
-criterion = torch.nn.MSELoss(size_average=False)
+criterion = torch.nn.MSELoss(reduction='sum')
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
 errorTime = []
 testErrorTime = []
 
-for t in range(200):
+for t in range(epochs):
     for (x,y) in loader:
         y_pred = model(Variable(x))
         loss = criterion(y_pred, Variable(y))
         print(t, loss.data[0])
-        errorTime.append(loss.data[0])
+        errorTime.append(loss.data.item())
         # Zero gradients, perform a backward pass, and update the weights.
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         # test_pred = model(xtest)
         # testLoss = criterion(test_pred, ytest)
-        # testErrorTime.append(testLoss.data[0])
+        # testErrorTime.append(testLoss.data.item())
 
 import matplotlib.pyplot as plt
 xs = range(len(errorTime))
