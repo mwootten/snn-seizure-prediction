@@ -25,9 +25,15 @@ The multi-spiking model we tried has a remarkably poor performance. The single-s
 
 ## Running the code
 
-TODO: add further instructions
+First, complete the first of the preprocessing steps. You can find the instructions for [downloading data](https://github.com/matthewlw/snn-seizure-prediction/wiki/Retrieving-Raw-Data) and [running the Fourier transform](https://github.com/matthewlw/snn-seizure-prediction/wiki/FFT) on our project wiki.
+
+After that, you should be able to use the Makefile in the project root. Create a folder named `build`, then move the Makefile into that directory; this should make the relative paths work out correctly. It has dependencies on `awk`, `jq`, and PyPy. Please be advised that we have not attempted to run this code on Windows; while there's no clear reason why it should fail, it will almost certainly require a lot of tweaking. Run `make spiking-predicted` and `make spiking-sans2-predicted` to run the test predictions for the multi-spiking network, along with all the intermediate steps. `make spiking-true` and `make spiking-sans2-true` should create all the true test labels. These files correspond line-by-line; that is, if the 10th line of the 'true' file reads 1, then the 10th line of the 'predicted' file should have a positive prediction (though a mistake here is an incorrect prediction of the model, not a bug in the code). 
+
+An output of 15 signals a positive prediction; an output of 18 signals a negative one. Therefore, straightforward sorting methods for calculating the ROC have to flip the sign, or else get a worse-than-chance result. An output that is neither 15 nor 18 should be interpreted as an uncertain prediction of whichever bound is closer.
+
+The single-spiking code is in the `single-spiking` folder. I don't have documentation on its function, other than knowing it's based off Lee, Delbruck, and Pfeiffer (2016) -- described on the project wiki -- and that it has the same inputs and outputs as the multi-spiking network.
 
 ## Authors
 
-- Primary: Jeremy Angel and Matthew Wootten (Loudoun Academy of Science)
-- Other contributors: Jimin Chae and Junwon Kim (Daegu Science High School)
+- Multi-spiking code: Jeremy Angel and Matthew Wootten (Loudoun Academy of Science)
+- SIngle-spiking code: Jimin Chae and Junwon Kim (Daegu Science High School)
