@@ -21,7 +21,7 @@ Since we framed this as a binary classification problem, we decided to use binar
 
 ![Multiple ROC plot](https://cdn.rawgit.com/matthewlw/snn-seizure-prediction/ae4c1623/diagrams/final-roc.svg)
 
-The multi-spiking model we tried has a remarkably poor performance. The single-spiking network (which was created by some of our collaborators, and whose code is not on our repository) did slightly better, but not better than a simple convolutional network, or best of all, an SVM trained on the final layer.
+The multi-spiking model we tried has a remarkably poor performance. The single-spiking network (which was created by some of our collaborators) did slightly better, but not better than a simple convolutional network, or best of all, an SVM trained on the final layer.
 
 ## Running the code
 
